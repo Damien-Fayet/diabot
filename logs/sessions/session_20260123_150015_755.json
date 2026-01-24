@@ -1,0 +1,151 @@
+{
+  "session_id": "20260123_150015_755",
+  "created_at": "2026-01-23T15:00:15.755236",
+  "events": [
+    {
+      "timestamp": 1769176815.755753,
+      "event_type": "decision",
+      "action": "start_exploration",
+      "game_state": {
+        "location": "Cathedral"
+      },
+      "result": "success",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176815.7700968,
+      "event_type": "item_pickup",
+      "action": "pickup_S",
+      "game_state": {
+        "location": "Cathedral"
+      },
+      "result": "Harlequin Crest",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176815.781814,
+      "event_type": "item_pickup",
+      "action": "pickup_D",
+      "game_state": {
+        "location": "Cathedral"
+      },
+      "result": "Random Rare Axe",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176815.792454,
+      "event_type": "item_pickup",
+      "action": "pickup_A",
+      "game_state": {
+        "location": "Cathedral"
+      },
+      "result": "Shako",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176815.8108811,
+      "event_type": "item_pickup",
+      "action": "pickup_A",
+      "game_state": {
+        "location": "Cathedral"
+      },
+      "result": "String of Ears",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176815.824972,
+      "event_type": "item_pickup",
+      "action": "pickup_D",
+      "game_state": {
+        "location": "Cathedral"
+      },
+      "result": "Magic Armor",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176815.831597,
+      "event_type": "decision",
+      "action": "engage_combat",
+      "game_state": {
+        "enemies": 3
+      },
+      "result": "success",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176815.839848,
+      "event_type": "enemy_kill",
+      "action": "kill_Zombie",
+      "game_state": {
+        "enemies_remaining": 2
+      },
+      "result": "50",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176815.844537,
+      "event_type": "enemy_kill",
+      "action": "kill_Skeleton Archer",
+      "game_state": {
+        "enemies_remaining": 2
+      },
+      "result": "75",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176815.849899,
+      "event_type": "enemy_kill",
+      "action": "kill_Dark Shaman",
+      "game_state": {
+        "enemies_remaining": 2
+      },
+      "result": "100",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176815.856755,
+      "event_type": "potion_used",
+      "action": "drink_health",
+      "game_state": {
+        "location": "Cathedral"
+      },
+      "result": "0.5\u21920.9",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176815.863283,
+      "event_type": "potion_used",
+      "action": "drink_mana",
+      "game_state": {
+        "location": "Cathedral"
+      },
+      "result": "0.2\u21920.8",
+      "notes": null
+    }
+  ],
+  "metrics": {
+    "duration_seconds": 0.11391901969909668,
+    "total_events": 12,
+    "decisions": 2,
+    "items_picked": 5,
+    "enemies_killed": 3,
+    "potions_used": 2,
+    "deaths": 0,
+    "items_by_tier": {
+      "S": 1,
+      "A": 2,
+      "B": 0,
+      "C": 0,
+      "D": 2
+    },
+    "damage": {
+      "dealt": 225,
+      "taken": 45
+    },
+    "time": {
+      "combat": 25.0,
+      "exploration": 35.0
+    }
+  },
+  "ended_at": "2026-01-23T15:00:15.872170"
+}

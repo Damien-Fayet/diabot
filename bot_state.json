@@ -1,0 +1,12 @@
+{
+  "act": 1,
+  "zone": "",
+  "mode": "exploration",
+  "hp_ratio": 0.0,
+  "mana_ratio": 0.0,
+  "gold": 0,
+  "inventory_full": false,
+  "waypoint_unlocked": {},
+  "quests": {},
+  "run_logs": []
+}

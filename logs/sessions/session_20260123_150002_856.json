@@ -1,0 +1,27 @@
+{
+  "session_id": "20260123_150002_856",
+  "created_at": "2026-01-23T15:00:02.856104",
+  "events": [
+    {
+      "timestamp": 1769176802.8565571,
+      "event_type": "decision",
+      "action": "start_exploration",
+      "game_state": {
+        "location": "Cathedral"
+      },
+      "result": "success",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176802.868284,
+      "event_type": "item_pickup",
+      "action": "pickup_ItemTier.S",
+      "game_state": {
+        "location": "Cathedral"
+      },
+      "result": "Harlequin Crest",
+      "notes": null
+    }
+  ],
+  "metrics": {}
+}

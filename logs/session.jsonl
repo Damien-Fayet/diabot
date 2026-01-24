@@ -1,0 +1,193 @@
+{"session_id": "20260123_145622", "timestamp": 1769176582.707953, "event_type": "decision", "action": "start_exploration", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 0}, "result": "success", "notes": null}
+{"session_id": "20260123_145622", "timestamp": 1769176582.8174772, "event_type": "item_pickup", "action": "pickup_S", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 0}, "result": "Harlequin Crest", "notes": null}
+{"session_id": "20260123_145622", "timestamp": 1769176582.827094, "event_type": "item_pickup", "action": "pickup_C", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 0}, "result": "Random Rare Armor", "notes": null}
+{"session_id": "20260123_145622", "timestamp": 1769176582.834332, "event_type": "decision", "action": "engage_combat", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 2}, "result": "success", "notes": null}
+{"session_id": "20260123_145622", "timestamp": 1769176582.8473449, "event_type": "enemy_kill", "action": "kill_zombie", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 2}, "result": "50", "notes": null}
+{"session_id": "20260123_145622", "timestamp": 1769176582.8606248, "event_type": "enemy_kill", "action": "kill_skeleton", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 2}, "result": "75", "notes": null}
+{"session_id": "20260123_145622", "timestamp": 1769176582.872851, "event_type": "potion_used", "action": "drink_health", "game_state": {"location": "Cathedral", "hp_ratio": 0.7, "mana_ratio": 0.9, "enemies": 2}, "result": "0.7\u21920.9", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.6124759, "event_type": "decision", "action": "start_exploration", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 0}, "result": "success", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.729274, "event_type": "item_pickup", "action": "pickup_S", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 0}, "result": "Harlequin Crest", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.733935, "event_type": "item_pickup", "action": "pickup_C", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 0}, "result": "Random Rare Armor", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.737966, "event_type": "decision", "action": "engage_combat", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 2}, "result": "success", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.742292, "event_type": "enemy_kill", "action": "kill_zombie", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 2}, "result": "50", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.747166, "event_type": "enemy_kill", "action": "kill_skeleton", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 2}, "result": "75", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.7515578, "event_type": "potion_used", "action": "drink_health", "game_state": {"location": "Cathedral", "hp_ratio": 0.7, "mana_ratio": 0.9, "enemies": 2}, "result": "0.7\u21920.9", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.7605429, "event_type": "item_pickup", "action": "pickup_S", "game_state": {}, "result": "Item_1", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.764481, "event_type": "item_pickup", "action": "pickup_A", "game_state": {}, "result": "Item_2", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.7684321, "event_type": "enemy_kill", "action": "kill_enemy_1", "game_state": {}, "result": "50", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.772376, "event_type": "enemy_kill", "action": "kill_enemy_2", "game_state": {}, "result": "60", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.7764301, "event_type": "enemy_kill", "action": "kill_enemy_3", "game_state": {}, "result": "70", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.780828, "event_type": "death", "action": "player_death", "game_state": {}, "result": "boss", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.795616, "event_type": "item_pickup", "action": "pickup_S", "game_state": {}, "result": "Item_1", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.8006358, "event_type": "item_pickup", "action": "pickup_A", "game_state": {}, "result": "Item_2", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.806931, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_3", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.813803, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_4", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.823282, "event_type": "enemy_kill", "action": "kill_enemy_1", "game_state": {}, "result": "50", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.8284538, "event_type": "enemy_kill", "action": "kill_enemy_2", "game_state": {}, "result": "60", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.833156, "event_type": "enemy_kill", "action": "kill_enemy_3", "game_state": {}, "result": "70", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.837585, "event_type": "enemy_kill", "action": "kill_enemy_4", "game_state": {}, "result": "80", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.8424692, "event_type": "enemy_kill", "action": "kill_enemy_5", "game_state": {}, "result": "90", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.856225, "event_type": "enemy_kill", "action": "kill_enemy_6", "game_state": {}, "result": "100", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.871434, "event_type": "enemy_kill", "action": "kill_enemy_7", "game_state": {}, "result": "110", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.882217, "event_type": "enemy_kill", "action": "kill_enemy_8", "game_state": {}, "result": "120", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.896939, "event_type": "item_pickup", "action": "pickup_S", "game_state": {}, "result": "Item_1", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.900962, "event_type": "item_pickup", "action": "pickup_A", "game_state": {}, "result": "Item_2", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.904822, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_3", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.9085639, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_4", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.9126232, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_5", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.916723, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_6", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.921122, "event_type": "enemy_kill", "action": "kill_enemy_1", "game_state": {}, "result": "50", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.925502, "event_type": "enemy_kill", "action": "kill_enemy_2", "game_state": {}, "result": "60", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.9298282, "event_type": "enemy_kill", "action": "kill_enemy_3", "game_state": {}, "result": "70", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.9339452, "event_type": "enemy_kill", "action": "kill_enemy_4", "game_state": {}, "result": "80", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.9383092, "event_type": "enemy_kill", "action": "kill_enemy_5", "game_state": {}, "result": "90", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.9423869, "event_type": "enemy_kill", "action": "kill_enemy_6", "game_state": {}, "result": "100", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.946629, "event_type": "enemy_kill", "action": "kill_enemy_7", "game_state": {}, "result": "110", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.950804, "event_type": "enemy_kill", "action": "kill_enemy_8", "game_state": {}, "result": "120", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.9550269, "event_type": "enemy_kill", "action": "kill_enemy_9", "game_state": {}, "result": "130", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.959096, "event_type": "enemy_kill", "action": "kill_enemy_10", "game_state": {}, "result": "140", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.963478, "event_type": "enemy_kill", "action": "kill_enemy_11", "game_state": {}, "result": "150", "notes": null}
+{"session_id": "20260123_145658", "timestamp": 1769176618.967893, "event_type": "enemy_kill", "action": "kill_enemy_12", "game_state": {}, "result": "160", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.619464, "event_type": "decision", "action": "start_exploration", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 0}, "result": "success", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.725319, "event_type": "item_pickup", "action": "pickup_S", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 0}, "result": "Harlequin Crest", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.7363389, "event_type": "item_pickup", "action": "pickup_C", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 0}, "result": "Random Rare Armor", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.7456949, "event_type": "decision", "action": "engage_combat", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 2}, "result": "success", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.752576, "event_type": "enemy_kill", "action": "kill_zombie", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 2}, "result": "50", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.75679, "event_type": "enemy_kill", "action": "kill_skeleton", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 2}, "result": "75", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.760938, "event_type": "potion_used", "action": "drink_health", "game_state": {"location": "Cathedral", "hp_ratio": 0.7, "mana_ratio": 0.9, "enemies": 2}, "result": "0.7\u21920.9", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.771225, "event_type": "item_pickup", "action": "pickup_S", "game_state": {}, "result": "Item_1", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.7773829, "event_type": "item_pickup", "action": "pickup_A", "game_state": {}, "result": "Item_2", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.781027, "event_type": "enemy_kill", "action": "kill_enemy_1", "game_state": {}, "result": "50", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.7848792, "event_type": "enemy_kill", "action": "kill_enemy_2", "game_state": {}, "result": "60", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.7885098, "event_type": "enemy_kill", "action": "kill_enemy_3", "game_state": {}, "result": "70", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.7923148, "event_type": "death", "action": "player_death", "game_state": {}, "result": "boss", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.800808, "event_type": "item_pickup", "action": "pickup_S", "game_state": {}, "result": "Item_1", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.80455, "event_type": "item_pickup", "action": "pickup_A", "game_state": {}, "result": "Item_2", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.808303, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_3", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.8119261, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_4", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.815448, "event_type": "enemy_kill", "action": "kill_enemy_1", "game_state": {}, "result": "50", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.8191, "event_type": "enemy_kill", "action": "kill_enemy_2", "game_state": {}, "result": "60", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.8237, "event_type": "enemy_kill", "action": "kill_enemy_3", "game_state": {}, "result": "70", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.8284218, "event_type": "enemy_kill", "action": "kill_enemy_4", "game_state": {}, "result": "80", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.832576, "event_type": "enemy_kill", "action": "kill_enemy_5", "game_state": {}, "result": "90", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.836501, "event_type": "enemy_kill", "action": "kill_enemy_6", "game_state": {}, "result": "100", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.840641, "event_type": "enemy_kill", "action": "kill_enemy_7", "game_state": {}, "result": "110", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.8455548, "event_type": "enemy_kill", "action": "kill_enemy_8", "game_state": {}, "result": "120", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.854208, "event_type": "item_pickup", "action": "pickup_S", "game_state": {}, "result": "Item_1", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.85803, "event_type": "item_pickup", "action": "pickup_A", "game_state": {}, "result": "Item_2", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.861721, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_3", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.8654542, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_4", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.8691719, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_5", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.873366, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_6", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.87789, "event_type": "enemy_kill", "action": "kill_enemy_1", "game_state": {}, "result": "50", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.881919, "event_type": "enemy_kill", "action": "kill_enemy_2", "game_state": {}, "result": "60", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.886123, "event_type": "enemy_kill", "action": "kill_enemy_3", "game_state": {}, "result": "70", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.890164, "event_type": "enemy_kill", "action": "kill_enemy_4", "game_state": {}, "result": "80", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.894155, "event_type": "enemy_kill", "action": "kill_enemy_5", "game_state": {}, "result": "90", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.898871, "event_type": "enemy_kill", "action": "kill_enemy_6", "game_state": {}, "result": "100", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.9029078, "event_type": "enemy_kill", "action": "kill_enemy_7", "game_state": {}, "result": "110", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.9067872, "event_type": "enemy_kill", "action": "kill_enemy_8", "game_state": {}, "result": "120", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.910599, "event_type": "enemy_kill", "action": "kill_enemy_9", "game_state": {}, "result": "130", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.9145, "event_type": "enemy_kill", "action": "kill_enemy_10", "game_state": {}, "result": "140", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.918696, "event_type": "enemy_kill", "action": "kill_enemy_11", "game_state": {}, "result": "150", "notes": null}
+{"session_id": "20260123_145742", "timestamp": 1769176662.922796, "event_type": "enemy_kill", "action": "kill_enemy_12", "game_state": {}, "result": "160", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.079297, "event_type": "decision", "action": "start_exploration", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 0}, "result": "success", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.1952682, "event_type": "item_pickup", "action": "pickup_S", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 0}, "result": "Harlequin Crest", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.210761, "event_type": "item_pickup", "action": "pickup_C", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 0}, "result": "Random Rare Armor", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.221834, "event_type": "decision", "action": "engage_combat", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 2}, "result": "success", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.2327838, "event_type": "enemy_kill", "action": "kill_zombie", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 2}, "result": "50", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.244888, "event_type": "enemy_kill", "action": "kill_skeleton", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 2}, "result": "75", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.256811, "event_type": "potion_used", "action": "drink_health", "game_state": {"location": "Cathedral", "hp_ratio": 0.7, "mana_ratio": 0.9, "enemies": 2}, "result": "0.7\u21920.9", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.275522, "event_type": "item_pickup", "action": "pickup_S", "game_state": {}, "result": "Item_1", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.279389, "event_type": "item_pickup", "action": "pickup_A", "game_state": {}, "result": "Item_2", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.283103, "event_type": "enemy_kill", "action": "kill_enemy_1", "game_state": {}, "result": "50", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.2868228, "event_type": "enemy_kill", "action": "kill_enemy_2", "game_state": {}, "result": "60", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.2904892, "event_type": "enemy_kill", "action": "kill_enemy_3", "game_state": {}, "result": "70", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.2944388, "event_type": "death", "action": "player_death", "game_state": {}, "result": "boss", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.3072581, "event_type": "item_pickup", "action": "pickup_S", "game_state": {}, "result": "Item_1", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.310706, "event_type": "item_pickup", "action": "pickup_A", "game_state": {}, "result": "Item_2", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.317367, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_3", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.3211148, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_4", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.325056, "event_type": "enemy_kill", "action": "kill_enemy_1", "game_state": {}, "result": "50", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.328819, "event_type": "enemy_kill", "action": "kill_enemy_2", "game_state": {}, "result": "60", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.33306, "event_type": "enemy_kill", "action": "kill_enemy_3", "game_state": {}, "result": "70", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.337352, "event_type": "enemy_kill", "action": "kill_enemy_4", "game_state": {}, "result": "80", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.341571, "event_type": "enemy_kill", "action": "kill_enemy_5", "game_state": {}, "result": "90", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.3459709, "event_type": "enemy_kill", "action": "kill_enemy_6", "game_state": {}, "result": "100", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.350175, "event_type": "enemy_kill", "action": "kill_enemy_7", "game_state": {}, "result": "110", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.3573718, "event_type": "enemy_kill", "action": "kill_enemy_8", "game_state": {}, "result": "120", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.368335, "event_type": "item_pickup", "action": "pickup_S", "game_state": {}, "result": "Item_1", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.372223, "event_type": "item_pickup", "action": "pickup_A", "game_state": {}, "result": "Item_2", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.3757079, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_3", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.379165, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_4", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.38271, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_5", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.3861918, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_6", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.3902998, "event_type": "enemy_kill", "action": "kill_enemy_1", "game_state": {}, "result": "50", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.394416, "event_type": "enemy_kill", "action": "kill_enemy_2", "game_state": {}, "result": "60", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.398678, "event_type": "enemy_kill", "action": "kill_enemy_3", "game_state": {}, "result": "70", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.402853, "event_type": "enemy_kill", "action": "kill_enemy_4", "game_state": {}, "result": "80", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.406892, "event_type": "enemy_kill", "action": "kill_enemy_5", "game_state": {}, "result": "90", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.4110599, "event_type": "enemy_kill", "action": "kill_enemy_6", "game_state": {}, "result": "100", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.416887, "event_type": "enemy_kill", "action": "kill_enemy_7", "game_state": {}, "result": "110", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.4226649, "event_type": "enemy_kill", "action": "kill_enemy_8", "game_state": {}, "result": "120", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.426893, "event_type": "enemy_kill", "action": "kill_enemy_9", "game_state": {}, "result": "130", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.4307861, "event_type": "enemy_kill", "action": "kill_enemy_10", "game_state": {}, "result": "140", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.434788, "event_type": "enemy_kill", "action": "kill_enemy_11", "game_state": {}, "result": "150", "notes": null}
+{"session_id": "20260123_145749", "timestamp": 1769176669.438772, "event_type": "enemy_kill", "action": "kill_enemy_12", "game_state": {}, "result": "160", "notes": null}
+{"session_id": "20260123_145805_998", "timestamp": 1769176685.9992, "event_type": "decision", "action": "start_exploration", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 0}, "result": "success", "notes": null}
+{"session_id": "20260123_145805_998", "timestamp": 1769176686.108851, "event_type": "item_pickup", "action": "pickup_S", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 0}, "result": "Harlequin Crest", "notes": null}
+{"session_id": "20260123_145805_998", "timestamp": 1769176686.124057, "event_type": "item_pickup", "action": "pickup_C", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 0}, "result": "Random Rare Armor", "notes": null}
+{"session_id": "20260123_145805_998", "timestamp": 1769176686.136672, "event_type": "decision", "action": "engage_combat", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 2}, "result": "success", "notes": null}
+{"session_id": "20260123_145805_998", "timestamp": 1769176686.14743, "event_type": "enemy_kill", "action": "kill_zombie", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 2}, "result": "50", "notes": null}
+{"session_id": "20260123_145805_998", "timestamp": 1769176686.157729, "event_type": "enemy_kill", "action": "kill_skeleton", "game_state": {"location": "Cathedral", "hp_ratio": 0.95, "mana_ratio": 0.9, "enemies": 2}, "result": "75", "notes": null}
+{"session_id": "20260123_145805_998", "timestamp": 1769176686.164968, "event_type": "potion_used", "action": "drink_health", "game_state": {"location": "Cathedral", "hp_ratio": 0.7, "mana_ratio": 0.9, "enemies": 2}, "result": "0.7\u21920.9", "notes": null}
+{"session_id": "20260123_145806_173", "timestamp": 1769176686.173483, "event_type": "item_pickup", "action": "pickup_S", "game_state": {}, "result": "Item_1", "notes": null}
+{"session_id": "20260123_145806_173", "timestamp": 1769176686.177386, "event_type": "item_pickup", "action": "pickup_A", "game_state": {}, "result": "Item_2", "notes": null}
+{"session_id": "20260123_145806_173", "timestamp": 1769176686.1809359, "event_type": "enemy_kill", "action": "kill_enemy_1", "game_state": {}, "result": "50", "notes": null}
+{"session_id": "20260123_145806_173", "timestamp": 1769176686.184581, "event_type": "enemy_kill", "action": "kill_enemy_2", "game_state": {}, "result": "60", "notes": null}
+{"session_id": "20260123_145806_173", "timestamp": 1769176686.18819, "event_type": "enemy_kill", "action": "kill_enemy_3", "game_state": {}, "result": "70", "notes": null}
+{"session_id": "20260123_145806_173", "timestamp": 1769176686.1918259, "event_type": "death", "action": "player_death", "game_state": {}, "result": "boss", "notes": null}
+{"session_id": "20260123_145806_198", "timestamp": 1769176686.1987789, "event_type": "item_pickup", "action": "pickup_S", "game_state": {}, "result": "Item_1", "notes": null}
+{"session_id": "20260123_145806_198", "timestamp": 1769176686.20284, "event_type": "item_pickup", "action": "pickup_A", "game_state": {}, "result": "Item_2", "notes": null}
+{"session_id": "20260123_145806_198", "timestamp": 1769176686.2064378, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_3", "notes": null}
+{"session_id": "20260123_145806_198", "timestamp": 1769176686.210093, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_4", "notes": null}
+{"session_id": "20260123_145806_198", "timestamp": 1769176686.213728, "event_type": "enemy_kill", "action": "kill_enemy_1", "game_state": {}, "result": "50", "notes": null}
+{"session_id": "20260123_145806_198", "timestamp": 1769176686.217283, "event_type": "enemy_kill", "action": "kill_enemy_2", "game_state": {}, "result": "60", "notes": null}
+{"session_id": "20260123_145806_198", "timestamp": 1769176686.221211, "event_type": "enemy_kill", "action": "kill_enemy_3", "game_state": {}, "result": "70", "notes": null}
+{"session_id": "20260123_145806_198", "timestamp": 1769176686.225367, "event_type": "enemy_kill", "action": "kill_enemy_4", "game_state": {}, "result": "80", "notes": null}
+{"session_id": "20260123_145806_198", "timestamp": 1769176686.2297752, "event_type": "enemy_kill", "action": "kill_enemy_5", "game_state": {}, "result": "90", "notes": null}
+{"session_id": "20260123_145806_198", "timestamp": 1769176686.235936, "event_type": "enemy_kill", "action": "kill_enemy_6", "game_state": {}, "result": "100", "notes": null}
+{"session_id": "20260123_145806_198", "timestamp": 1769176686.2400799, "event_type": "enemy_kill", "action": "kill_enemy_7", "game_state": {}, "result": "110", "notes": null}
+{"session_id": "20260123_145806_198", "timestamp": 1769176686.244832, "event_type": "enemy_kill", "action": "kill_enemy_8", "game_state": {}, "result": "120", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.251745, "event_type": "item_pickup", "action": "pickup_S", "game_state": {}, "result": "Item_1", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.255471, "event_type": "item_pickup", "action": "pickup_A", "game_state": {}, "result": "Item_2", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.259501, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_3", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.26432, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_4", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.268244, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_5", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.272898, "event_type": "item_pickup", "action": "pickup_B", "game_state": {}, "result": "Item_6", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.2773728, "event_type": "enemy_kill", "action": "kill_enemy_1", "game_state": {}, "result": "50", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.281707, "event_type": "enemy_kill", "action": "kill_enemy_2", "game_state": {}, "result": "60", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.285575, "event_type": "enemy_kill", "action": "kill_enemy_3", "game_state": {}, "result": "70", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.28958, "event_type": "enemy_kill", "action": "kill_enemy_4", "game_state": {}, "result": "80", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.2934651, "event_type": "enemy_kill", "action": "kill_enemy_5", "game_state": {}, "result": "90", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.297445, "event_type": "enemy_kill", "action": "kill_enemy_6", "game_state": {}, "result": "100", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.301404, "event_type": "enemy_kill", "action": "kill_enemy_7", "game_state": {}, "result": "110", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.305287, "event_type": "enemy_kill", "action": "kill_enemy_8", "game_state": {}, "result": "120", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.3092558, "event_type": "enemy_kill", "action": "kill_enemy_9", "game_state": {}, "result": "130", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.313438, "event_type": "enemy_kill", "action": "kill_enemy_10", "game_state": {}, "result": "140", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.318062, "event_type": "enemy_kill", "action": "kill_enemy_11", "game_state": {}, "result": "150", "notes": null}
+{"session_id": "20260123_145806_251", "timestamp": 1769176686.322363, "event_type": "enemy_kill", "action": "kill_enemy_12", "game_state": {}, "result": "160", "notes": null}
+{"session_id": "20260123_150002_856", "timestamp": 1769176802.8565571, "event_type": "decision", "action": "start_exploration", "game_state": {"location": "Cathedral"}, "result": "success", "notes": null}
+{"session_id": "20260123_150002_856", "timestamp": 1769176802.868284, "event_type": "item_pickup", "action": "pickup_ItemTier.S", "game_state": {"location": "Cathedral"}, "result": "Harlequin Crest", "notes": null}
+{"session_id": "20260123_150015_755", "timestamp": 1769176815.755753, "event_type": "decision", "action": "start_exploration", "game_state": {"location": "Cathedral"}, "result": "success", "notes": null}
+{"session_id": "20260123_150015_755", "timestamp": 1769176815.7700968, "event_type": "item_pickup", "action": "pickup_S", "game_state": {"location": "Cathedral"}, "result": "Harlequin Crest", "notes": null}
+{"session_id": "20260123_150015_755", "timestamp": 1769176815.781814, "event_type": "item_pickup", "action": "pickup_D", "game_state": {"location": "Cathedral"}, "result": "Random Rare Axe", "notes": null}
+{"session_id": "20260123_150015_755", "timestamp": 1769176815.792454, "event_type": "item_pickup", "action": "pickup_A", "game_state": {"location": "Cathedral"}, "result": "Shako", "notes": null}
+{"session_id": "20260123_150015_755", "timestamp": 1769176815.8108811, "event_type": "item_pickup", "action": "pickup_A", "game_state": {"location": "Cathedral"}, "result": "String of Ears", "notes": null}
+{"session_id": "20260123_150015_755", "timestamp": 1769176815.824972, "event_type": "item_pickup", "action": "pickup_D", "game_state": {"location": "Cathedral"}, "result": "Magic Armor", "notes": null}
+{"session_id": "20260123_150015_755", "timestamp": 1769176815.831597, "event_type": "decision", "action": "engage_combat", "game_state": {"enemies": 3}, "result": "success", "notes": null}
+{"session_id": "20260123_150015_755", "timestamp": 1769176815.839848, "event_type": "enemy_kill", "action": "kill_Zombie", "game_state": {"enemies_remaining": 2}, "result": "50", "notes": null}
+{"session_id": "20260123_150015_755", "timestamp": 1769176815.844537, "event_type": "enemy_kill", "action": "kill_Skeleton Archer", "game_state": {"enemies_remaining": 2}, "result": "75", "notes": null}
+{"session_id": "20260123_150015_755", "timestamp": 1769176815.849899, "event_type": "enemy_kill", "action": "kill_Dark Shaman", "game_state": {"enemies_remaining": 2}, "result": "100", "notes": null}
+{"session_id": "20260123_150015_755", "timestamp": 1769176815.856755, "event_type": "potion_used", "action": "drink_health", "game_state": {"location": "Cathedral"}, "result": "0.5\u21920.9", "notes": null}
+{"session_id": "20260123_150015_755", "timestamp": 1769176815.863283, "event_type": "potion_used", "action": "drink_mana", "game_state": {"location": "Cathedral"}, "result": "0.2\u21920.8", "notes": null}

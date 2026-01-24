@@ -1,0 +1,127 @@
+{
+  "session_id": "20260123_145806_198",
+  "created_at": "2026-01-23T14:58:06.198502",
+  "events": [
+    {
+      "timestamp": 1769176686.1987789,
+      "event_type": "item_pickup",
+      "action": "pickup_S",
+      "game_state": {},
+      "result": "Item_1",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176686.20284,
+      "event_type": "item_pickup",
+      "action": "pickup_A",
+      "game_state": {},
+      "result": "Item_2",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176686.2064378,
+      "event_type": "item_pickup",
+      "action": "pickup_B",
+      "game_state": {},
+      "result": "Item_3",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176686.210093,
+      "event_type": "item_pickup",
+      "action": "pickup_B",
+      "game_state": {},
+      "result": "Item_4",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176686.213728,
+      "event_type": "enemy_kill",
+      "action": "kill_enemy_1",
+      "game_state": {},
+      "result": "50",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176686.217283,
+      "event_type": "enemy_kill",
+      "action": "kill_enemy_2",
+      "game_state": {},
+      "result": "60",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176686.221211,
+      "event_type": "enemy_kill",
+      "action": "kill_enemy_3",
+      "game_state": {},
+      "result": "70",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176686.225367,
+      "event_type": "enemy_kill",
+      "action": "kill_enemy_4",
+      "game_state": {},
+      "result": "80",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176686.2297752,
+      "event_type": "enemy_kill",
+      "action": "kill_enemy_5",
+      "game_state": {},
+      "result": "90",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176686.235936,
+      "event_type": "enemy_kill",
+      "action": "kill_enemy_6",
+      "game_state": {},
+      "result": "100",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176686.2400799,
+      "event_type": "enemy_kill",
+      "action": "kill_enemy_7",
+      "game_state": {},
+      "result": "110",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176686.244832,
+      "event_type": "enemy_kill",
+      "action": "kill_enemy_8",
+      "game_state": {},
+      "result": "120",
+      "notes": null
+    }
+  ],
+  "metrics": {
+    "duration_seconds": 0.05061483383178711,
+    "total_events": 12,
+    "decisions": 0,
+    "items_picked": 4,
+    "enemies_killed": 8,
+    "potions_used": 0,
+    "deaths": 0,
+    "items_by_tier": {
+      "S": 1,
+      "A": 1,
+      "B": 2,
+      "C": 0,
+      "D": 0
+    },
+    "damage": {
+      "dealt": 680,
+      "taken": 0
+    },
+    "time": {
+      "combat": 45.0,
+      "exploration": 105.0
+    }
+  },
+  "ended_at": "2026-01-23T14:58:06.251172"
+}

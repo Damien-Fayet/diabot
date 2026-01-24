@@ -1,0 +1,155 @@
+{
+  "items": {
+    "Harlequin Crest": {
+      "tier": "S",
+      "type": "helm",
+      "quality": "unique",
+      "description": "Shako with life boost"
+    },
+    "Mara's Kaleidoscope": {
+      "tier": "S",
+      "type": "amulet",
+      "quality": "unique",
+      "description": "Amulet with +2 skills and resistances"
+    },
+    "Stone of Jordan": {
+      "tier": "S",
+      "type": "ring",
+      "quality": "unique",
+      "description": "Ring with mana and +1 skills"
+    },
+    "The Oculus": {
+      "tier": "S",
+      "type": "orb",
+      "quality": "unique",
+      "description": "Sorceress unique orb"
+    },
+    "Annihilus": {
+      "tier": "S",
+      "type": "charm",
+      "quality": "unique",
+      "description": "Small charm with +skills and stats"
+    },
+    "Hellfire Torch": {
+      "tier": "S",
+      "type": "charm",
+      "quality": "unique",
+      "description": "Large charm with +skills"
+    },
+    "Shako": {
+      "tier": "A",
+      "type": "helm",
+      "quality": "unique",
+      "description": "Classic helm with +2 skills and life"
+    },
+    "Homunculus": {
+      "tier": "A",
+      "type": "shield",
+      "quality": "unique",
+      "description": "Shield with +2 skills"
+    },
+    "String of Ears": {
+      "tier": "A",
+      "type": "amulet",
+      "quality": "unique",
+      "description": "Amulet with life leech"
+    },
+    "War Traveler": {
+      "tier": "A",
+      "type": "boots",
+      "quality": "unique",
+      "description": "Boots with magic find"
+    },
+    "Tal Rasha's Wrappings": {
+      "tier": "S",
+      "type": "armor",
+      "quality": "set",
+      "description": "Set armor piece"
+    },
+    "Windforce": {
+      "tier": "A",
+      "type": "weapon",
+      "quality": "unique",
+      "description": "Unique bow with knockback"
+    }
+  },
+  "runewords": {
+    "Enigma": {
+      "tier": "S",
+      "type": "armor",
+      "effect": "teleport",
+      "description": "Teleport and highest defense"
+    },
+    "Chains of Honor": {
+      "tier": "S",
+      "type": "armor",
+      "effect": "defense",
+      "description": "High defense and resistances"
+    },
+    "Spirit": {
+      "tier": "S",
+      "type": "weapon",
+      "effect": "+2 skills",
+      "description": "Cheap +2 skills runeword"
+    },
+    "Infinity": {
+      "tier": "A",
+      "type": "weapon",
+      "effect": "conviction",
+      "description": "Sorceress weapon"
+    },
+    "Insight": {
+      "tier": "A",
+      "type": "weapon",
+      "effect": "meditation",
+      "description": "Meditation aura for mana"
+    },
+    "Holy Thunder": {
+      "tier": "A",
+      "type": "weapon",
+      "effect": "+2 paladin skills",
+      "description": "Paladin runeword"
+    }
+  },
+  "default_tiers": {
+    "unique": "A",
+    "set": "B",
+    "rare": "C",
+    "magic": "D",
+    "normal": "D",
+    "superior": "D"
+  },
+  "stat_templates": {
+    "life": {
+      "good": 20,
+      "excellent": 50,
+      "amazing": 100
+    },
+    "mana": {
+      "good": 20,
+      "excellent": 50
+    },
+    "damage": {
+      "good": 10,
+      "excellent": 30,
+      "amazing": 60
+    },
+    "defense": {
+      "good": 50,
+      "excellent": 100,
+      "amazing": 200
+    },
+    "resistances": {
+      "good": 20,
+      "excellent": 50,
+      "max": 75
+    }
+  },
+  "pickup_rules": {
+    "enabled": true,
+    "min_tier": "B",
+    "exceptions": ["Annihilus", "Hellfire Torch"],
+    "skip_normal": true,
+    "skip_low_id": false
+  }
+}

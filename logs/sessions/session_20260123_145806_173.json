@@ -1,0 +1,79 @@
+{
+  "session_id": "20260123_145806_173",
+  "created_at": "2026-01-23T14:58:06.173177",
+  "events": [
+    {
+      "timestamp": 1769176686.173483,
+      "event_type": "item_pickup",
+      "action": "pickup_S",
+      "game_state": {},
+      "result": "Item_1",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176686.177386,
+      "event_type": "item_pickup",
+      "action": "pickup_A",
+      "game_state": {},
+      "result": "Item_2",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176686.1809359,
+      "event_type": "enemy_kill",
+      "action": "kill_enemy_1",
+      "game_state": {},
+      "result": "50",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176686.184581,
+      "event_type": "enemy_kill",
+      "action": "kill_enemy_2",
+      "game_state": {},
+      "result": "60",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176686.18819,
+      "event_type": "enemy_kill",
+      "action": "kill_enemy_3",
+      "game_state": {},
+      "result": "70",
+      "notes": null
+    },
+    {
+      "timestamp": 1769176686.1918259,
+      "event_type": "death",
+      "action": "player_death",
+      "game_state": {},
+      "result": "boss",
+      "notes": null
+    }
+  ],
+  "metrics": {
+    "duration_seconds": 0.022753238677978516,
+    "total_events": 6,
+    "decisions": 0,
+    "items_picked": 2,
+    "enemies_killed": 3,
+    "potions_used": 0,
+    "deaths": 1,
+    "items_by_tier": {
+      "S": 1,
+      "A": 1,
+      "B": 0,
+      "C": 0,
+      "D": 0
+    },
+    "damage": {
+      "dealt": 180,
+      "taken": 0
+    },
+    "time": {
+      "combat": 36.0,
+      "exploration": 84.0
+    }
+  },
+  "ended_at": "2026-01-23T14:58:06.198259"
+}

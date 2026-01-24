@@ -1,0 +1,30 @@
+# YOLO dataset config
+# Replace paths with your actual dataset split locations
+# Structure expected:
+# data/
+#   images/train/*.jpg
+#   images/val/*.jpg
+#   labels/train/*.txt  # YOLO format: class cx cy w h (normalized)
+#   labels/val/*.txt
+
+path: data
+train: images/train
+val: images/val
+
+test: images/val  # optional
+
+# Number of classes
+nc: 2
+
+# Class names (index order matters)
+names:
+  0: enemy
+  1: item
+
+# Image size recommendation
+imgsz: 640
+
+# Notes:
+# - For a small dataset (quelques centaines d'images), commencez avec yolo11n.pt ou yolo11s.pt
+# - Ajoutez des images sans ennemis ni items pour réduire les faux positifs
+# - Gardez les classes simples au début (enemy, item). Vous pourrez en ajouter plus tard.
