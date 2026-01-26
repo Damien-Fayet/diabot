@@ -1,0 +1,1714 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-01-26T19:54:02.570057",
+  "zones": [
+    {
+      "zone_name": "ROGUE ENCAMPMENT",
+      "act": "a1",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            395,
+            385
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            238,
+            383
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            290,
+            352
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            339,
+            348
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            276,
+            328
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            315,
+            325
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            385,
+            320
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            202,
+            330
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            468,
+            58
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            476,
+            59
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            473,
+            162
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            487,
+            156
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            472,
+            131
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            157,
+            244
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            179,
+            235
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            161,
+            239
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            7,
+            231
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            165,
+            216
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            486,
+            248
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            486,
+            248
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            496,
+            279
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            352,
+            201
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            494,
+            197
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            495,
+            197
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            329,
+            193
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            2,
+            52
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            163,
+            55
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            2,
+            58
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            184,
+            185
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            360,
+            183
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            192,
+            162
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            439,
+            177
+          ],
+          "zone": "ROGUE ENCAMPMENT",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-24T19:24:47.855165"
+    },
+    {
+      "zone_name": "UNKNOWN",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            468,
+            56
+          ],
+          "zone": "UNKNOWN",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            467,
+            55
+          ],
+          "zone": "UNKNOWN",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            10,
+            81
+          ],
+          "zone": "UNKNOWN",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            17,
+            62
+          ],
+          "zone": "UNKNOWN",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            183,
+            58
+          ],
+          "zone": "UNKNOWN",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            202,
+            179
+          ],
+          "zone": "UNKNOWN",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            358,
+            164
+          ],
+          "zone": "UNKNOWN",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            439,
+            176
+          ],
+          "zone": "UNKNOWN",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-24T20:24:18.416338"
+    },
+    {
+      "zone_name": "LD LEER",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T13:42:42.792147"
+    },
+    {
+      "zone_name": "LED LEER",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T13:42:43.182731"
+    },
+    {
+      "zone_name": "LD TSER",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T13:42:44.723661"
+    },
+    {
+      "zone_name": "LD SER",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T13:42:45.099057"
+    },
+    {
+      "zone_name": "L D TGR",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T13:42:45.491950"
+    },
+    {
+      "zone_name": "LD TGER",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T13:42:45.880708"
+    },
+    {
+      "zone_name": "LEGD TEER",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T13:42:48.903525"
+    },
+    {
+      "zone_name": "BLOOD MOOR",
+      "act": "a1",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T13:42:49.295541"
+    },
+    {
+      "zone_name": "LD TLEER",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T13:42:49.669491"
+    },
+    {
+      "zone_name": "LD LEER -",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T13:42:50.061964"
+    },
+    {
+      "zone_name": "L D WEEN",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T13:42:50.446607"
+    },
+    {
+      "zone_name": "SL GED TIR OE",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T13:42:50.855943"
+    },
+    {
+      "zone_name": "L D TGOR",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T13:42:52.473805"
+    },
+    {
+      "zone_name": "L D TSR",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T13:44:00.560985"
+    },
+    {
+      "zone_name": "LD TIGEA",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T13:44:01.321849"
+    },
+    {
+      "zone_name": "EE",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            438,
+            176
+          ],
+          "zone": "EE",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T15:44:56.403805"
+    },
+    {
+      "zone_name": "TENER COIN  Y",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:14:11.858248"
+    },
+    {
+      "zone_name": "A NY",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            171,
+            75
+          ],
+          "zone": "A NY",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:14:12.620449"
+    },
+    {
+      "zone_name": "CULL IE  ST",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            183,
+            78
+          ],
+          "zone": "CULL IE  ST",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:14:13.979665"
+    },
+    {
+      "zone_name": "HY OS",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            177,
+            66
+          ],
+          "zone": "HY OS",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            177,
+            66
+          ],
+          "zone": "HY OS",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:14:14.553356"
+    },
+    {
+      "zone_name": "BAY EE SAY",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            182,
+            79
+          ],
+          "zone": "BAY EE SAY",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            24,
+            81
+          ],
+          "zone": "BAY EE SAY",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:14:15.557360"
+    },
+    {
+      "zone_name": "AD PE OF ANY",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            23,
+            82
+          ],
+          "zone": "AD PE OF ANY",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:14:17.001619"
+    },
+    {
+      "zone_name": "NY SOE AE",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            174,
+            77
+          ],
+          "zone": "NY SOE AE",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:16:46.571206"
+    },
+    {
+      "zone_name": "IL WN A",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            172,
+            76
+          ],
+          "zone": "IL WN A",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            20,
+            60
+          ],
+          "zone": "IL WN A",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:16:47.452404"
+    },
+    {
+      "zone_name": "A  N  TO NE TR AT  LE AR",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            16,
+            60
+          ],
+          "zone": "A  N  TO NE TR AT  LE AR",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            183,
+            55
+          ],
+          "zone": "A  N  TO NE TR AT  LE AR",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:16:48.455340"
+    },
+    {
+      "zone_name": "ME UF    HA NE   EO",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            183,
+            78
+          ],
+          "zone": "ME UF    HA NE   EO",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            7,
+            69
+          ],
+          "zone": "ME UF    HA NE   EO",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:16:49.445392"
+    },
+    {
+      "zone_name": "WET      A AS VE",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            16,
+            57
+          ],
+          "zone": "WET      A AS VE",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:16:50.740960"
+    },
+    {
+      "zone_name": "DS    - BH  SE HES",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            174,
+            76
+          ],
+          "zone": "DS    - BH  SE HES",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            26,
+            69
+          ],
+          "zone": "DS    - BH  SE HES",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            14,
+            49
+          ],
+          "zone": "DS    - BH  SE HES",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            183,
+            55
+          ],
+          "zone": "DS    - BH  SE HES",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:16:51.433511"
+    },
+    {
+      "zone_name": "F SA WW  S-",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            11,
+            81
+          ],
+          "zone": "F SA WW  S-",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            17,
+            59
+          ],
+          "zone": "F SA WW  S-",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            182,
+            54
+          ],
+          "zone": "F SA WW  S-",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:16:52.455757"
+    },
+    {
+      "zone_name": "IN AE   E",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            180,
+            55
+          ],
+          "zone": "IN AE   E",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:16:53.439853"
+    },
+    {
+      "zone_name": "CD   ONS JF   OH OE",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            182,
+            58
+          ],
+          "zone": "CD   ONS JF   OH OE",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:30:42.730211"
+    },
+    {
+      "zone_name": "EE OW GG ES EG",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:30:44.496424"
+    },
+    {
+      "zone_name": "JE  OO",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            172,
+            74
+          ],
+          "zone": "JE  OO",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:30:45.491977"
+    },
+    {
+      "zone_name": "SAGE   NO   MTG",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            12,
+            81
+          ],
+          "zone": "SAGE   NO   MTG",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:30:46.831243"
+    },
+    {
+      "zone_name": "ITED ASS KW",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            31,
+            74
+          ],
+          "zone": "ITED ASS KW",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            181,
+            59
+          ],
+          "zone": "ITED ASS KW",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:30:47.540091"
+    },
+    {
+      "zone_name": "PIAS OBES  BL  OR YY NS OO OR",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            171,
+            75
+          ],
+          "zone": "PIAS OBES  BL  OR YY NS OO OR",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:40:38.163142"
+    },
+    {
+      "zone_name": "I FA BE",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            11,
+            81
+          ],
+          "zone": "I FA BE",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:40:38.845684"
+    },
+    {
+      "zone_name": "A STED A RN GET A A",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            9,
+            80
+          ],
+          "zone": "A STED A RN GET A A",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            29,
+            76
+          ],
+          "zone": "A STED A RN GET A A",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            27,
+            77
+          ],
+          "zone": "A STED A RN GET A A",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:40:39.900030"
+    },
+    {
+      "zone_name": "AA AN   FI",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:40:40.884078"
+    },
+    {
+      "zone_name": "AS A WE  EE AE  AE",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            181,
+            58
+          ],
+          "zone": "AS A WE  EE AE  AE",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:40:43.554292"
+    },
+    {
+      "zone_name": "YT OT TA A MS  YV PEL AU STK",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            186,
+            78
+          ],
+          "zone": "YT OT TA A MS  YV PEL AU STK",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            9,
+            67
+          ],
+          "zone": "YT OT TA A MS  YV PEL AU STK",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:42:29.766306"
+    },
+    {
+      "zone_name": "Y WHLS A  AON",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:42:30.699738"
+    },
+    {
+      "zone_name": "IY SO SICA",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            17,
+            58
+          ],
+          "zone": "IY SO SICA",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            182,
+            57
+          ],
+          "zone": "IY SO SICA",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:42:31.616297"
+    },
+    {
+      "zone_name": "A",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:42:33.326904"
+    },
+    {
+      "zone_name": "IY EA CE",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            27,
+            74
+          ],
+          "zone": "IY EA CE",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            12,
+            49
+          ],
+          "zone": "IY EA CE",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            181,
+            56
+          ],
+          "zone": "IY EA CE",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:42:33.904966"
+    },
+    {
+      "zone_name": "HY WF A EA WAREN",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            12,
+            74
+          ],
+          "zone": "HY WF A EA WAREN",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            12,
+            74
+          ],
+          "zone": "HY WF A EA WAREN",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            189,
+            73
+          ],
+          "zone": "HY WF A EA WAREN",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:44:12.221964"
+    },
+    {
+      "zone_name": "E EE SEA",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            28,
+            76
+          ],
+          "zone": "E EE SEA",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:44:13.035117"
+    },
+    {
+      "zone_name": "YAY D  ILY",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            18,
+            59
+          ],
+          "zone": "YAY D  ILY",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            181,
+            57
+          ],
+          "zone": "YAY D  ILY",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:44:14.990009"
+    },
+    {
+      "zone_name": "CATHEDRAL",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            183,
+            78
+          ],
+          "zone": "CATHEDRAL",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            30,
+            74
+          ],
+          "zone": "CATHEDRAL",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            181,
+            56
+          ],
+          "zone": "CATHEDRAL",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:44:16.831128"
+    },
+    {
+      "zone_name": "TAGES MN",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            12,
+            83
+          ],
+          "zone": "TAGES MN",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            20,
+            65
+          ],
+          "zone": "TAGES MN",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            181,
+            60
+          ],
+          "zone": "TAGES MN",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:44:17.609728"
+    },
+    {
+      "zone_name": "PE AE OE  EE EM  OS COA  WEB TM WG",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            18,
+            62
+          ],
+          "zone": "PE AE OE  EE EM  OS COA  WEB TM WG",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:48:22.544033"
+    },
+    {
+      "zone_name": "EH OO - NY  TIE SEN",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            185,
+            79
+          ],
+          "zone": "EH OO - NY  TIE SEN",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            26,
+            65
+          ],
+          "zone": "EH OO - NY  TIE SEN",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            181,
+            57
+          ],
+          "zone": "EH OO - NY  TIE SEN",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:48:23.443180"
+    },
+    {
+      "zone_name": "SN EE",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            11,
+            81
+          ],
+          "zone": "SN EE",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            27,
+            76
+          ],
+          "zone": "SN EE",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            11,
+            54
+          ],
+          "zone": "SN EE",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            173,
+            47
+          ],
+          "zone": "SN EE",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:48:24.264878"
+    },
+    {
+      "zone_name": "NE",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Waypoint",
+          "poi_type": "waypoint",
+          "position": [
+            357,
+            183
+          ],
+          "zone": "NE",
+          "target_zone": null,
+          "notes": ""
+        },
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            358,
+            183
+          ],
+          "zone": "NE",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:52:53.517189"
+    },
+    {
+      "zone_name": "TNE",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            358,
+            162
+          ],
+          "zone": "TNE",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T17:53:46.415347"
+    },
+    {
+      "zone_name": "I A",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            439,
+            176
+          ],
+          "zone": "I A",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T18:00:03.862484"
+    },
+    {
+      "zone_name": "I AO",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            433,
+            189
+          ],
+          "zone": "I AO",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T18:17:49.229385"
+    },
+    {
+      "zone_name": "CAVE",
+      "act": "unknown",
+      "minimap_hash": "",
+      "pois": [
+        {
+          "name": "Player",
+          "poi_type": "player",
+          "position": [
+            428,
+            185
+          ],
+          "zone": "CAVE",
+          "target_zone": null,
+          "notes": ""
+        }
+      ],
+      "connections": {},
+      "discovered_at": "2026-01-26T18:17:51.217660"
+    }
+  ]
+}

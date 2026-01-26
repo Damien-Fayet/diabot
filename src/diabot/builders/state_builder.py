@@ -53,7 +53,7 @@ class EnhancedStateBuilder(StateBuilder):
             enemies=enemies,
             items=items,
             threat_level=threat_level,
-            current_location=self._estimate_location(perception),
+            current_location=perception.current_zone or "unknown",
             frame_number=self.frame_counter,
         )
         

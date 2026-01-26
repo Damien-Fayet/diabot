@@ -17,6 +17,7 @@ class Perception:
     enemy_types: list[str]
     visible_items: list[str]
     player_position: tuple[int, int]
+    current_zone: str = "UNKNOWN"  # Current zone name from OCR
     raw_data: Dict[str, Any] = None  # For debugging
 
 

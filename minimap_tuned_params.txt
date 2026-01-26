@@ -1,0 +1,12 @@
+# Minimap Processing Parameters
+crop_bottom_percent = 21
+tophat_kernel_size = 5
+gamma = 3.00
+clahe_clip_limit = 3.9
+clahe_tile_grid_size = 8
+threshold = 49
+hough_threshold = 57
+hough_min_line_length = 24
+hough_max_line_gap = 9
+morph_open_kernel = 2
+morph_close_kernel = 8

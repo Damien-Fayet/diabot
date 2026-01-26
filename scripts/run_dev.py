@@ -17,7 +17,7 @@ from diabot.core.implementations import (
     RuleBasedDecisionEngine,
     DummyActionExecutor,
 )
-from diabot.debug.overlay import DebugOverlay
+from diabot.debug.overlay import BrainOverlay
 
 
 def main(screenshot_path: str = None):
@@ -49,6 +49,7 @@ def main(screenshot_path: str = None):
         state_builder = SimpleStateBuilder(frame_counter=0)
         decision_engine = RuleBasedDecisionEngine()
         action_executor = DummyActionExecutor()
+        overlay = BrainOverlay(enabled=True)
         
         # Get frame
         frame = image_source.get_frame()
@@ -70,12 +71,21 @@ def main(screenshot_path: str = None):
         action_executor.execute_action(action.action_type, action.params)
         
         # Visualize with overlay
-        output_frame = DebugOverlay.draw_state(frame, state)
+        # Visualize full brain overlay (FSM/action/state info)
+        output_frame = overlay.draw(
+            frame,
+            perception=perception,
+            state=state,
+            action=action,
+            fsm_state="DEV",
+            detections=None,
+            zone_name=state.current_location,
+        )
         
         # Display
-        output_path = Path(__file__).parent.parent / "data" / "screenshots" / "output_debug.png"
+        output_path = Path(__file__).parent.parent / "data" / "screenshots" / "output_brain_overlay.png"
         cv2.imwrite(str(output_path), output_frame)
-        print(f"✓ Debug overlay saved to: {output_path}")
+        print(f"✓ Brain overlay saved to: {output_path}")
         
         # Show frame if display available
         try:

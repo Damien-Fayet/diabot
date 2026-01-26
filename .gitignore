@@ -1,3 +1,14 @@
+demo_vision_separation.py
+demo_integration.py
+demo_npc_detection.py
+demo_navigation_integration.py
+demo_logging_system.py
+demo_movement_navigation.py
+scripts/demo_enhanced_engine.py
+data/screenshots/outputs/yolo_demo.jpg
+data/ml
+data/trainingset
+runs/detect
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

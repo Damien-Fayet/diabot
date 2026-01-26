@@ -79,24 +79,24 @@ UI_REGIONS = {
     
     'lifebar_ui': ScreenRegion(
         name='lifebar_ui',
-        x_ratio=0.2,      # Text region above HP orb (wider for 999/999)
-        y_ratio=0.833,      # Text region above HP orb
-        w_ratio=0.1,      # Text region above HP orb (wider for 999/999)
-        h_ratio=0.022,      # Text region above HP orb
+        x_ratio=0.2000,      # Calibrated for 1940x1123
+        y_ratio=0.7622,      # Calibrated for 1940x1123
+        w_ratio=0.0845,      # Calibrated for 1940x1123
+        h_ratio=0.0392,      # Calibrated for 1940x1123
     ),
     'manabar_ui': ScreenRegion(
         name='manabar_ui',
-        x_ratio=0.71,      # Text region above Mana orb (wider for 999/999)
-        y_ratio=0.837,      # Text region above Mana orb
-        w_ratio=0.1,      # Text region above Mana orb (wider for 999/999)
-        h_ratio=0.019,      # Text region above Mana orb
+        x_ratio=0.7057,      # Calibrated for 1940x1123
+        y_ratio=0.7649,      # Calibrated for 1940x1123
+        w_ratio=0.0892,      # Calibrated for 1940x1123
+        h_ratio=0.0356,      # Calibrated for 1940x1123
     ),
     'zone_ui': ScreenRegion(
         name='zone_ui',
-        x_ratio=0.75,
-        y_ratio=0.05,
-        w_ratio=0.4,
-        h_ratio=0.06,
+        x_ratio=0.88,      # Calibrated for 1940x1123
+        y_ratio=0.0232,      # Calibrated for 1940x1123
+        w_ratio=0.10,      # Calibrated for 1940x1123
+        h_ratio=0.0383,      # Calibrated for 1940x1123
     ),
 }
 
@@ -106,7 +106,7 @@ ENVIRONMENT_REGIONS = {
         x_ratio=0.0,
         y_ratio=0.05,
         w_ratio=1.0,      # Full width
-        h_ratio=0.85,      
+        h_ratio=0.75,      
     ),
     'inventory_ui': ScreenRegion(
         name='inventory_ui',

@@ -3,7 +3,7 @@
 import json
 import tempfile
 from pathlib import Path
-from diabot.logging import SessionLogger, SessionEvent
+from diabot.botlogging import SessionLogger, SessionEvent
 from diabot.stats import SessionAnalytics
 
 

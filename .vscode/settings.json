@@ -7,6 +7,17 @@
         "/^source \\.venv/bin/activate && python tests/test_models\\.py$/": {
             "approve": true,
             "matchCommandLine": true
-        }
+        },
+        "C:/Users/Damien/Desktop/d2_bot/diabot/.venv/Scripts/python.exe": true,
+        "/^python test_live_capture\\.py 2>&1 \\| Select-Object -First 100$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^dir c:\\\\Users\\\\Damien\\\\Desktop\\\\d2_bot\\\\diabot\\\\data\\\\maps\\\\ 2>&1 \\| head -20$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "Get-Item": true,
+        ".venv\\Scripts\\python.exe": true
     }
 }

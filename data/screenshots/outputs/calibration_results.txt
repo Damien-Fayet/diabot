@@ -1,0 +1,15 @@
+
+# Updated screen_regions.py values:
+
+UI_REGIONS = {
+    'minimap_ui': ScreenRegion(
+        name='minimap_ui',
+        x_ratio=0.6582,
+        y_ratio=0.0321,
+        w_ratio=0.3304,
+        h_ratio=0.3330,
+    ),
+}
+
+ENVIRONMENT_REGIONS = {
+}

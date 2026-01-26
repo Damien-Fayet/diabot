@@ -81,12 +81,12 @@ def draw_environment_state(frame, env_state, env_region):
 
 def main():
     print("=" * 60)
-    print("🔍 VISION TEST ON game.jpg")
+    print("🔍 VISION TEST ON game.png")
     print("=" * 60)
     print()
     
     # Load image
-    image_path = Path("data/screenshots/inputs/game.jpg")
+    image_path = Path("data/screenshots/inputs/game.png")
     frame = cv2.imread(str(image_path))
     
     if frame is None:

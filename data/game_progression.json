@@ -1,0 +1,693 @@
+{
+  "game": {
+    "title": "Diablo 2: Resurrected",
+    "progression": {
+      "current_act": 1,
+      "current_quest": "q1_1",
+      "current_zone": "tristram",
+      "completed_quests": []
+    }
+  },
+  "acts": [
+    {
+      "id": 1,
+      "name": "The Rogue Encampment",
+      "difficulty": "Normal",
+      "town": "Tristram",
+      "zones": [
+        {
+          "id": "tristram",
+          "name": "Tristram",
+          "type": "town",
+          "npcs": [
+            "Akara",
+            "Charsi",
+            "Kashya",
+            "Warriv"
+          ],
+          "objectives": []
+        },
+        {
+          "id": "barracks",
+          "name": "Barracks",
+          "type": "dungeon",
+          "enemies": [
+            "Fallen",
+            "Quill Rat",
+            "Zombie"
+          ],
+          "objectives": [
+            "Clear for quest"
+          ]
+        },
+        {
+          "id": "cathedral",
+          "name": "Cathedral",
+          "type": "dungeon",
+          "enemies": [
+            "Undead",
+            "Demon"
+          ],
+          "objectives": [
+            "Find Deckard Cain"
+          ]
+        },
+        {
+          "id": "catacombs",
+          "name": "Catacombs",
+          "type": "dungeon",
+          "enemies": [
+            "Undead",
+            "Demon",
+            "Wraith"
+          ],
+          "objectives": [
+            "Find Lazarus"
+          ]
+        },
+        {
+          "id": "outer_cloister",
+          "name": "Outer Cloister",
+          "type": "dungeon",
+          "enemies": [
+            "Undead",
+            "Fallen"
+          ],
+          "objectives": [
+            "Navigate to Cathedral"
+          ]
+        },
+        {
+          "id": "inner_cloister",
+          "name": "Inner Cloister",
+          "type": "dungeon",
+          "enemies": [
+            "Undead",
+            "Demon"
+          ],
+          "objectives": [
+            "Navigate to Cathedral"
+          ]
+        }
+      ],
+      "quests": [
+        {
+          "id": "q1_1",
+          "name": "Den of Evil",
+          "giver": "Akara",
+          "objective": "Clear the Den of Evil",
+          "reward": "Experience + Skill Point",
+          "status": "completed"
+        },
+        {
+          "id": "q1_2",
+          "name": "Sisters' Burial Grounds",
+          "giver": "Kashya",
+          "objective": "Defeat the corrupted Rogue Encampment",
+          "reward": "Experience",
+          "status": "in_progress"
+        },
+        {
+          "id": "q1_3",
+          "name": "Search for Cain",
+          "giver": "Akara",
+          "objective": "Find and rescue Deckard Cain in the Cathedral",
+          "reward": "Deckard Cain joins town",
+          "status": "not_started"
+        },
+        {
+          "id": "q1_4",
+          "name": "Forgotten Tower",
+          "giver": "None",
+          "objective": "Explore the Forgotten Tower (optional)",
+          "reward": "Experience + Loot",
+          "status": "not_started"
+        },
+        {
+          "id": "q1_5",
+          "name": "The Countess",
+          "giver": "None",
+          "objective": "Defeat the Countess in the Black Marsh (optional)",
+          "reward": "Experience + Runes",
+          "status": "not_started"
+        },
+        {
+          "id": "q1_6",
+          "name": "Andariel",
+          "giver": "Warriv",
+          "objective": "Defeat Andariel in the Cathedral",
+          "reward": "Progression to Act 2",
+          "status": "not_started"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "The Secret of the Vizjerei",
+      "difficulty": "Normal",
+      "town": "Lut Gholein",
+      "zones": [
+        {
+          "id": "lut_gholein",
+          "name": "Lut Gholein",
+          "type": "town",
+          "npcs": [
+            "Atma",
+            "Cain",
+            "Drognan",
+            "Elzix",
+            "Fara",
+            "Jerhyn"
+          ],
+          "objectives": []
+        },
+        {
+          "id": "rocky_waste",
+          "name": "Rocky Waste",
+          "type": "outdoor",
+          "enemies": [
+            "Skeleton",
+            "Sand Raider"
+          ],
+          "objectives": [
+            "Travel to desert"
+          ]
+        },
+        {
+          "id": "dry_hills",
+          "name": "Dry Hills",
+          "type": "outdoor",
+          "enemies": [
+            "Skeleton",
+            "Zombie"
+          ],
+          "objectives": [
+            "Travel to desert"
+          ]
+        },
+        {
+          "id": "far_oasis",
+          "name": "Far Oasis",
+          "type": "outdoor",
+          "enemies": [
+            "Sand Raider",
+            "Scarab"
+          ],
+          "objectives": [
+            "Find waypoint"
+          ]
+        },
+        {
+          "id": "lost_city",
+          "name": "Lost City",
+          "type": "dungeon",
+          "enemies": [
+            "Golem",
+            "Skeleton"
+          ],
+          "objectives": [
+            "Navigate to Arcane Sanctuary"
+          ]
+        },
+        {
+          "id": "palace_sewers",
+          "name": "Palace Sewers",
+          "type": "dungeon",
+          "enemies": [
+            "Golem",
+            "Demon",
+            "Maggot"
+          ],
+          "objectives": [
+            "Navigate to Arcane Sanctuary"
+          ]
+        },
+        {
+          "id": "arcane_sanctuary",
+          "name": "Arcane Sanctuary",
+          "type": "dungeon",
+          "enemies": [
+            "Golem",
+            "Demon"
+          ],
+          "objectives": [
+            "Navigate to Lut Gholein"
+          ]
+        }
+      ],
+      "quests": [
+        {
+          "id": "q2_1",
+          "name": "Radament's Lair",
+          "giver": "Atma",
+          "objective": "Defeat Radament in the Sewers",
+          "reward": "Experience + Skill Point",
+          "status": "not_started"
+        },
+        {
+          "id": "q2_2",
+          "name": "The Horadric Staff",
+          "giver": "Cain",
+          "objective": "Find the two parts of the Horadric Staff",
+          "reward": "Staff components",
+          "status": "not_started"
+        },
+        {
+          "id": "q2_3",
+          "name": "Tainted Sun",
+          "giver": "Jerhyn",
+          "objective": "Find the source of the desert plague",
+          "reward": "Experience",
+          "status": "not_started"
+        },
+        {
+          "id": "q2_4",
+          "name": "Arcane Sanctuary",
+          "giver": "Cain",
+          "objective": "Traverse the Arcane Sanctuary to reach Lut Gholein Portal",
+          "reward": "Portal access",
+          "status": "not_started"
+        },
+        {
+          "id": "q2_5",
+          "name": "The Summoner",
+          "giver": "None",
+          "objective": "Defeat the Summoner in the Arcane Sanctuary (required)",
+          "reward": "Key to Lut Gholein",
+          "status": "not_started"
+        },
+        {
+          "id": "q2_6",
+          "name": "Duriel",
+          "giver": "Drognan",
+          "objective": "Defeat Duriel, Lord of Pain",
+          "reward": "Progression to Act 3",
+          "status": "not_started"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "The Infernal Gate",
+      "difficulty": "Normal",
+      "town": "Kurastfatn",
+      "zones": [
+        {
+          "id": "kurastfatn",
+          "name": "Kurast",
+          "type": "town",
+          "npcs": [
+            "Meshif",
+            "Cain",
+            "Alkor",
+            "Asheara"
+          ],
+          "objectives": []
+        },
+        {
+          "id": "great_marsh",
+          "name": "Great Marsh",
+          "type": "outdoor",
+          "enemies": [
+            "Vile Lord",
+            "Stake"
+          ],
+          "objectives": [
+            "Travel to jungle"
+          ]
+        },
+        {
+          "id": "flayer_jungle",
+          "name": "Flayer Jungle",
+          "type": "outdoor",
+          "enemies": [
+            "Flayer Spawner",
+            "Jungle Foliage"
+          ],
+          "objectives": [
+            "Travel to jungle"
+          ]
+        },
+        {
+          "id": "lower_kurast",
+          "name": "Lower Kurast",
+          "type": "outdoor",
+          "enemies": [
+            "Flayer",
+            "Council"
+          ],
+          "objectives": [
+            "Collect Super Unique items"
+          ]
+        },
+        {
+          "id": "kurast_sewers",
+          "name": "Kurast Sewers",
+          "type": "dungeon",
+          "enemies": [
+            "Council",
+            "Demon"
+          ],
+          "objectives": [
+            "Navigate to Durance"
+          ]
+        },
+        {
+          "id": "upper_kurast",
+          "name": "Upper Kurast",
+          "type": "outdoor",
+          "enemies": [
+            "Flayer",
+            "Demon"
+          ],
+          "objectives": [
+            "Reach Kurast Sewers"
+          ]
+        },
+        {
+          "id": "durance_of_hate",
+          "name": "Durance of Hate",
+          "type": "dungeon",
+          "enemies": [
+            "Demon",
+            "Soul"
+          ],
+          "objectives": [
+            "Reach Mephisto"
+          ]
+        }
+      ],
+      "quests": [
+        {
+          "id": "q3_1",
+          "name": "The Golden Bird",
+          "giver": "Alkor",
+          "objective": "Find the Golden Bird in the Flayer Jungle",
+          "reward": "Experience + Skill Point",
+          "status": "not_started"
+        },
+        {
+          "id": "q3_2",
+          "name": "Blade of the Old Religion",
+          "giver": "Cain",
+          "objective": "Find the Unique axe in the Flayer Jungle",
+          "reward": "Special item",
+          "status": "not_started"
+        },
+        {
+          "id": "q3_3",
+          "name": "Khalim's Will",
+          "giver": "Cain",
+          "objective": "Collect the parts of Khalim's Will",
+          "reward": "Staff component",
+          "status": "not_started"
+        },
+        {
+          "id": "q3_4",
+          "name": "Lam Esen's Tome",
+          "giver": "Alkor",
+          "objective": "Collect Lam Esen's Tome pages",
+          "reward": "Experience",
+          "status": "not_started"
+        },
+        {
+          "id": "q3_5",
+          "name": "Lower Kurast Treasure",
+          "giver": "None",
+          "objective": "Collect the Unique items hidden in Lower Kurast",
+          "reward": "Loot",
+          "status": "not_started"
+        },
+        {
+          "id": "q3_6",
+          "name": "Mephisto",
+          "giver": "Cain",
+          "objective": "Defeat Mephisto in the Durance of Hate",
+          "reward": "Progression to Act 4",
+          "status": "not_started"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Act IV: The Harrowing",
+      "difficulty": "Normal",
+      "town": "Pandemonium Fortress",
+      "zones": [
+        {
+          "id": "pandemonium_fortress",
+          "name": "Pandemonium Fortress",
+          "type": "town",
+          "npcs": [
+            "Cain",
+            "Tyrael"
+          ],
+          "objectives": []
+        },
+        {
+          "id": "outer_steppes",
+          "name": "Outer Steppes",
+          "type": "outdoor",
+          "enemies": [
+            "Vile Lord",
+            "Demon"
+          ],
+          "objectives": [
+            "Travel to Hell"
+          ]
+        },
+        {
+          "id": "plains_of_despair",
+          "name": "Plains of Despair",
+          "type": "outdoor",
+          "enemies": [
+            "Demon",
+            "Soul"
+          ],
+          "objectives": [
+            "Travel to Hell"
+          ]
+        },
+        {
+          "id": "city_of_the_damned",
+          "name": "City of the Damned",
+          "type": "outdoor",
+          "enemies": [
+            "Demon",
+            "Undead"
+          ],
+          "objectives": [
+            "Travel to Hell"
+          ]
+        },
+        {
+          "id": "river_of_flame",
+          "name": "River of Flame",
+          "type": "outdoor",
+          "enemies": [
+            "Demon",
+            "Soul"
+          ],
+          "objectives": [
+            "Reach Hell Palace"
+          ]
+        },
+        {
+          "id": "hell_palace",
+          "name": "Hell's Palace",
+          "type": "dungeon",
+          "enemies": [
+            "Demon",
+            "Soul"
+          ],
+          "objectives": [
+            "Reach Diablo"
+          ]
+        }
+      ],
+      "quests": [
+        {
+          "id": "q4_1",
+          "name": "The Fallen Angel",
+          "giver": "Tyrael",
+          "objective": "Defeat Izual in the River of Flame",
+          "reward": "Experience + Skill Point",
+          "status": "not_started"
+        },
+        {
+          "id": "q4_2",
+          "name": "Hell's Brood",
+          "giver": "None",
+          "objective": "Defeat super uniques in Hell",
+          "reward": "Experience + Loot",
+          "status": "not_started"
+        },
+        {
+          "id": "q4_3",
+          "name": "Diablo",
+          "giver": "Tyrael",
+          "objective": "Defeat Diablo himself",
+          "reward": "Progression to Act 5",
+          "status": "not_started"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Act V: Lord of Destruction",
+      "difficulty": "Normal",
+      "town": "Harrogath",
+      "zones": [
+        {
+          "id": "harrogath",
+          "name": "Harrogath",
+          "type": "town",
+          "npcs": [
+            "Tyrael",
+            "Cain",
+            "Malah",
+            "Qual-Kehk"
+          ],
+          "objectives": []
+        },
+        {
+          "id": "blood_moor",
+          "name": "Blood Moor",
+          "type": "outdoor",
+          "enemies": [
+            "Werewolf",
+            "Demon"
+          ],
+          "objectives": [
+            "Travel to Worldstone"
+          ]
+        },
+        {
+          "id": "crystalline_passage",
+          "name": "Crystalline Passage",
+          "type": "dungeon",
+          "enemies": [
+            "Ice",
+            "Demon"
+          ],
+          "objectives": [
+            "Travel to Worldstone"
+          ]
+        },
+        {
+          "id": "frozen_tundra",
+          "name": "Frozen Tundra",
+          "type": "outdoor",
+          "enemies": [
+            "Werewolf",
+            "Demon"
+          ],
+          "objectives": [
+            "Travel to Worldstone"
+          ]
+        },
+        {
+          "id": "ancients_way",
+          "name": "Ancients' Way",
+          "type": "outdoor",
+          "enemies": [
+            "Werewolf",
+            "Demon"
+          ],
+          "objectives": [
+            "Reach Worldstone"
+          ]
+        },
+        {
+          "id": "worldstone_keep",
+          "name": "Worldstone Keep",
+          "type": "dungeon",
+          "enemies": [
+            "Demon",
+            "Undead"
+          ],
+          "objectives": [
+            "Reach Baal"
+          ]
+        }
+      ],
+      "quests": [
+        {
+          "id": "q5_1",
+          "name": "Siege on Harrogath",
+          "giver": "Tyrael",
+          "objective": "Survive the waves of demons attacking Harrogath",
+          "reward": "Experience + Skill Point",
+          "status": "not_started"
+        },
+        {
+          "id": "q5_2",
+          "name": "Rescue on Mount Arreat",
+          "giver": "Qual-Kehk",
+          "objective": "Rescue the barbarian from the Worldstone",
+          "reward": "Experience",
+          "status": "not_started"
+        },
+        {
+          "id": "q5_3",
+          "name": "Prison of Ice",
+          "giver": "Malah",
+          "objective": "Defeat Nihlathak in the Worldstone Keep",
+          "reward": "Experience",
+          "status": "not_started"
+        },
+        {
+          "id": "q5_4",
+          "name": "Baal",
+          "giver": "Tyrael",
+          "objective": "Defeat Baal, Lord of Destruction",
+          "reward": "Game completion",
+          "status": "not_started"
+        }
+      ]
+    }
+  ],
+  "bot_strategy": {
+    "default_behavior": "complete_current_quest",
+    "quest_completion_order": [
+      "q1_1",
+      "q1_2",
+      "q1_3",
+      "q1_6",
+      "q2_1",
+      "q2_2",
+      "q2_5",
+      "q2_6",
+      "q3_1",
+      "q3_3",
+      "q3_6",
+      "q4_1",
+      "q4_3",
+      "q5_1",
+      "q5_4"
+    ],
+    "loot_strategy": {
+      "pickup": [
+        "unique",
+        "set",
+        "rare"
+      ],
+      "identify_with": "cain",
+      "sell_low_value": true,
+      "stash_valuable": true
+    },
+    "difficulty_settings": {
+      "normal": true,
+      "nightmare": false,
+      "hell": false
+    }
+  },
+  "progression": {
+    "current_act": 1,
+    "current_quest": "q1_2",
+    "current_zone": null,
+    "completed_quests": [
+      "q1_1"
+    ]
+  }
+}

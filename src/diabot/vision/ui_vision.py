@@ -16,12 +16,20 @@ from typing import Dict, List, Tuple, Optional
 import cv2
 import numpy as np
 import re
+import shutil
+import json
+from pathlib import Path
 
 try:
     import pytesseract
     TESSERACT_AVAILABLE = True
 except ImportError:
     TESSERACT_AVAILABLE = False
+
+# Resolve tesseract executable if available in PATH or common install dir.
+TESSERACT_CMD = shutil.which("tesseract") or r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+if TESSERACT_AVAILABLE and TESSERACT_CMD:
+    pytesseract.pytesseract.tesseract_cmd = TESSERACT_CMD
 
 from .screen_regions import UI_REGIONS
 
@@ -59,6 +67,9 @@ class UIVisionModule:
         """
         self.debug = debug
         
+        # Load zones database for OCR correction
+        self._load_zones_database()
+        
         # HSV ranges for UI elements
         # These are specific to UI areas, different from playfield
         self.health_bar_range = (
@@ -70,6 +81,27 @@ class UIVisionModule:
             np.array([100, 80, 100]),    # Low saturation blue
             np.array([130, 255, 255]),
         )
+    
+    def _load_zones_database(self):
+        """Load Diablo 2 zones database for OCR correction."""
+        zones_path = Path(__file__).parent.parent.parent.parent / "data" / "zones_database.json"
+        
+        try:
+            with open(zones_path, 'r', encoding='utf-8') as f:
+                zones_data = json.load(f)
+                self.known_zones = zones_data.get('zones', [])
+                self.ocr_corrections = zones_data.get('ocr_corrections', {})
+                self.fuzzy_threshold = zones_data.get('fuzzy_match_threshold', 0.6)
+                
+                if self.debug:
+                    print(f"✓ Loaded {len(self.known_zones)} zones from database")
+        except Exception as e:
+            if self.debug:
+                print(f"⚠️  Could not load zones database: {e}")
+            # Fallback to basic list
+            self.known_zones = ["ROGUE ENCAMPMENT", "BLOOD MOOR", "COLD PLAINS"]
+            self.ocr_corrections = {"REOVE": "ROGUE", "MOON": "ROGUE"}
+            self.fuzzy_threshold = 0.6
     
     def analyze(self, frame: np.ndarray) -> UIState:
         """
@@ -88,7 +120,20 @@ class UIVisionModule:
         
         # Read values via OCR
         hp_ratio = self._read_bar_via_ocr(lifebar_region, "HP")
+        
+        # Try alternative preprocessing if primary fails
+        if hp_ratio == 0.5:  # fallback value means OCR failed
+            hp_ratio_alt = self._read_bar_via_ocr_alternative(lifebar_region, "HP")
+            if hp_ratio_alt != 0.5:
+                hp_ratio = hp_ratio_alt
+        
         mana_ratio = self._read_bar_via_ocr(manabar_region, "Mana")
+        
+        if mana_ratio == 0.5:
+            mana_ratio_alt = self._read_bar_via_ocr_alternative(manabar_region, "Mana")
+            if mana_ratio_alt != 0.5:
+                mana_ratio = mana_ratio_alt
+        
         zone_name = self._read_zone_via_ocr(zone_region)
         
         # Detect potions (simplified - not yet implemented)
@@ -128,40 +173,115 @@ class UIVisionModule:
         # Convert to grayscale
         gray = cv2.cvtColor(region, cv2.COLOR_BGR2GRAY)
         
-        # Resize to improve OCR accuracy (make text larger)
-        scale_factor = 3
+        # Resize first to improve OCR accuracy (make text larger)
+        scale_factor = 4
         h, w = gray.shape
         resized = cv2.resize(gray, (w * scale_factor, h * scale_factor), 
                             interpolation=cv2.INTER_CUBIC)
         
-        # Threshold to get clean text
-        # Text is typically white/bright on dark background
-        _, binary = cv2.threshold(resized, 150, 255, cv2.THRESH_BINARY)
+        # Apply bilateral filter for edge-preserving smoothing (better than aggressive denoise)
+        smoothed = cv2.bilateralFilter(resized, 9, 75, 75)
         
-        # Optional: morphological operations to clean up
-        kernel = np.ones((2, 2), np.uint8)
-        cleaned = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
+        # Enhance contrast with CLAHE
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        enhanced = clahe.apply(smoothed)
         
-        # OCR configuration for numeric text
-        # --psm 7: single text line
-        # --oem 3: default OCR engine mode
-        # -c tessedit_char_whitelist: only allow digits and slash
-        config = '--psm 7 --oem 3 -c tessedit_char_whitelist=0123456789/'
+        # Simple binary threshold works better for Diablo 2 crisp text
+        # Otsu finds optimal threshold automatically
+        _, binary = cv2.threshold(enhanced, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         
+        # Light morphological cleanup
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+        cleaned = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel, iterations=1)
+        
+        # Debug: save preprocessed image
+        if self.debug:
+            debug_path = f"data/screenshots/outputs/diagnostic/ocr_{bar_name}_processed.png"
+            import os
+            os.makedirs(os.path.dirname(debug_path), exist_ok=True)
+            cv2.imwrite(debug_path, cleaned)
+        
+        # OCR configuration for numeric text (Diablo 2 uses specific font)
+        # Try multiple PSM modes in priority order:
+        # PSM 8: single word (good for short numeric strings)
+        # PSM 7: single line
+        # PSM 13: raw line
+        # PSM 6: uniform block (default)
+        configs = [
+            ('--psm 8 --oem 1', 'PSM8+OEM1'),
+            ('--psm 8 --oem 1 -c tessedit_char_whitelist=" 0123456789/"', 'PSM8+whitelist'),
+            ('--psm 7 --oem 1', 'PSM7+OEM1'),
+            ('--psm 7 --oem 1 -c tessedit_char_whitelist=" 0123456789/"', 'PSM7+whitelist'),
+            ('--psm 6 --oem 1', 'PSM6+OEM1'),
+            ('--psm 11 --oem 1', 'PSM11+OEM1'),  # Sparse text
+            ('--psm 13 --oem 1', 'PSM13+OEM1'),  # Raw line
+        ]
+        
+        text = ""
+        for config, label in configs:
+            try:
+                result = pytesseract.image_to_string(cleaned, config=config).strip()
+                if self.debug:
+                    print(f"  [{label}] → '{result}'")
+                if result:  # First non-empty result wins
+                    text = result
+                    if self.debug:
+                        print(f"📖 {bar_name} OCR success with {label}: '{text}'")
+                    break
+            except Exception as e:
+                if self.debug:
+                    print(f"  [{label}] → ERROR: {e}")
+        
+        if not text and self.debug:
+            print(f"📖 {bar_name} OCR: '' (all configs failed)")
+        
+        # Parse text: expect "current/max" or just "current"
+        ratio = self._parse_bar_text(text, bar_name)
+        return ratio
+    
+    def _read_bar_via_ocr_alternative(self, region: np.ndarray, bar_name: str) -> float:
+        """Alternative OCR approach with inverted threshold for white text on dark background.
+        
+        Args:
+            region: BGR image patch
+            bar_name: "HP" or "Mana" for debug
+            
+        Returns:
+            Ratio (0.0-1.0), or 0.5 as fallback
+        """
+        if region.size == 0 or not TESSERACT_AVAILABLE:
+            return 0.5
+        
+        gray = cv2.cvtColor(region, cv2.COLOR_BGR2GRAY)
+        
+        # Larger scale for small text
+        scale_factor = 6
+        h, w = gray.shape
+        resized = cv2.resize(gray, (w * scale_factor, h * scale_factor), 
+                            interpolation=cv2.INTER_CUBIC)
+        
+        # Try inverted: black text on white background
+        _, binary = cv2.threshold(resized, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        
+        # Save alternative preprocessing
+        if self.debug:
+            debug_path = f"data/screenshots/outputs/diagnostic/ocr_{bar_name}_alt_processed.png"
+            import os
+            os.makedirs(os.path.dirname(debug_path), exist_ok=True)
+            cv2.imwrite(debug_path, binary)
+        
+        config = '--psm 8 --oem 1 -c tessedit_char_whitelist=" 0123456789/"'
         try:
-            text = pytesseract.image_to_string(cleaned, config=config).strip()
-            
+            text = pytesseract.image_to_string(binary, config=config).strip()
             if self.debug:
-                print(f"📖 {bar_name} OCR: '{text}'")
-            
-            # Parse text: expect "current/max" or just "current"
-            ratio = self._parse_bar_text(text, bar_name)
-            return ratio
-            
+                print(f"📖 {bar_name} OCR (alternative inverted): '{text}'")
+            if text:
+                return self._parse_bar_text(text, bar_name)
         except Exception as e:
             if self.debug:
-                print(f"❌ {bar_name} OCR failed: {e}")
-            return 0.5
+                print(f"❌ {bar_name} alternative OCR failed: {e}")
+        
+        return 0.5
     
     def _parse_bar_text(self, text: str, bar_name: str) -> float:
         """
@@ -171,6 +291,9 @@ class UIVisionModule:
         - "120/150" → 0.8
         - "120" → assume mid-range, 0.5
         - "120 / 150" → 0.8 (with spaces)
+        - "Life: 32/40" → 0.8 (with label prefix)
+        - "Lire: 32/40" → 0.8 (OCR misread of Life)
+        - "Mana: 35 / 35" → 1.0 (with label prefix and spaces)
         
         Args:
             text: OCR result
@@ -179,6 +302,9 @@ class UIVisionModule:
         Returns:
             Ratio (0.0-1.0)
         """
+        # Remove common label prefixes (case insensitive)
+        text = re.sub(r'^(life|lire|mana|hp|mp):\s*', '', text, flags=re.IGNORECASE)
+        
         # Remove spaces
         text = text.replace(" ", "")
         
@@ -229,42 +355,137 @@ class UIVisionModule:
                 print(f"⚠️  Zone: Tesseract not available")
             return ""
         
-        # Preprocess for OCR
-        gray = cv2.cvtColor(region, cv2.COLOR_BGR2GRAY)
+        # Debug: save original zone region
+        if self.debug:
+            debug_path = "data/screenshots/outputs/diagnostic/ocr_Zone_0_original.png"
+            import os
+            os.makedirs(os.path.dirname(debug_path), exist_ok=True)
+            cv2.imwrite(debug_path, region)
         
-        # Resize to improve OCR accuracy
-        scale_factor = 2
-        h, w = gray.shape
-        resized = cv2.resize(gray, (w * scale_factor, h * scale_factor), 
-                            interpolation=cv2.INTER_CUBIC)
+        # Try color-based filtering first (Diablo 2 zone text is gold/yellow)
+        hsv = cv2.cvtColor(region, cv2.COLOR_BGR2HSV)
         
-        # Threshold to get clean text
-        # Zone text is typically white/bright
-        _, binary = cv2.threshold(resized, 150, 255, cv2.THRESH_BINARY)
+        # Gold/yellow range in HSV
+        # H: 15-40 (yellow/gold), S: 50-255 (saturated), V: 100-255 (bright)
+        lower_gold = np.array([15, 50, 100])
+        upper_gold = np.array([40, 255, 255])
         
-        # Clean up noise
-        kernel = np.ones((2, 2), np.uint8)
-        cleaned = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
+        mask = cv2.inRange(hsv, lower_gold, upper_gold)
         
-        # OCR configuration for text (allow letters, spaces, punctuation)
-        # --psm 7: single text line
-        config = '--psm 7 --oem 3'
+        # Debug: save color mask
+        if self.debug:
+            debug_path = "data/screenshots/outputs/diagnostic/ocr_Zone_1_color_mask.png"
+            cv2.imwrite(debug_path, mask)
         
-        try:
-            text = pytesseract.image_to_string(cleaned, config=config).strip()
+        # SIMPLIFIED: Use color mask directly for OCR, skip grayscale and binary
+        # The mask is already binary (0 or 255) and isolates gold text
+        
+        # If no gold text found, OCR will likely fail (which is expected)
+        # Light morphological cleanup
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+        cleaned = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=1)
+        
+        # Debug: save final preprocessed zone image
+        if self.debug:
+            debug_path = "data/screenshots/outputs/diagnostic/ocr_Zone_7_final.png"
+            import os
+            os.makedirs(os.path.dirname(debug_path), exist_ok=True)
+            cv2.imwrite(debug_path, cleaned)
+        
+        # OCR configuration - try multiple PSM modes
+        configs = [
+            ('--psm 7 --oem 1', 'PSM7+OEM1'),  # Single text line
+            ('--psm 6 --oem 1', 'PSM6+OEM1'),  # Uniform block
+            ('--psm 3 --oem 1', 'PSM3+OEM1'),  # Fully automatic
+        ]
+        
+        text = ""
+        for config, label in configs:
+            try:
+                result = pytesseract.image_to_string(cleaned, config=config).strip()
+                if self.debug:
+                    print(f"  [{label}] → '{result}'")
+                if result:  # First non-empty wins
+                    # Clean up: remove extra whitespace, remove common OCR artifacts
+                    text = ' '.join(result.split())
+                    # Remove noise: keep only letters, spaces, and common punctuation
+                    text = re.sub(r'[^A-Za-z\s\'-]', '', text)
+                    text = text.strip()
+                    if self.debug:
+                        print(f"📍 Zone OCR success with {label}: '{text}'")
+                    if text:  # Only break if we have actual text after cleaning
+                        break
+            except Exception as e:
+                if self.debug:
+                    print(f"  [{label}] → ERROR: {e}")
+        
+        if not text and self.debug:
+            print(f"📍 Zone OCR: '' (all configs failed)")
+        
+        # Apply fuzzy matching for known zone names
+        if text:
+            text = self._correct_zone_name(text)
+        
+        return text
+    
+    def _correct_zone_name(self, ocr_text: str) -> str:
+        """
+        Correct common OCR mistakes for Diablo 2 zone names.
+        Uses fuzzy matching to map to known zone names from database.
+        
+        Args:
+            ocr_text: Raw OCR output
             
-            # Clean up: remove extra whitespace
-            text = ' '.join(text.split())
-            
+        Returns:
+            Corrected zone name
+        """
+        # Convert to uppercase for comparison
+        ocr_text_upper = ocr_text.upper()
+        
+        # Apply direct corrections from database
+        for mistake, correction in self.ocr_corrections.items():
+            ocr_text_upper = ocr_text_upper.replace(mistake, correction)
+        
+        # Additional contextual corrections specific to zone text
+        # These are more aggressive than database corrections
+        contextual_fixes = {
+            "BLEEP": "BLOOD",
+            "BLEOD": "BLOOD",
+            "PLOOD": "BLOOD",
+            "BLEED": "BLOOD",
+            "BLEER": "BLOOD",
+            "MEER": "MOOR",
+            "MOZE": "MOOR",
+            "PLAIR": "PLAIN",
+            "FLAIN": "PLAIN",
+            "STONY FEILD": "STONY FIELD",
+            "TAME HIGHLAND": "TAMOE HIGHLAND",
+            "TAMBOE": "TAMOE",
+            "TAROE": "TAMOE",
+        }
+        
+        for mistake, correction in contextual_fixes.items():
+            if mistake in ocr_text_upper:
+                ocr_text_upper = ocr_text_upper.replace(mistake, correction)
+                if self.debug:
+                    print(f"  🔧 Context fix: {mistake} → {correction}")
+        
+        # Try to match with known zones using fuzzy similarity
+        from difflib import get_close_matches
+        matches = get_close_matches(
+            ocr_text_upper, 
+            self.known_zones, 
+            n=1, 
+            cutoff=self.fuzzy_threshold
+        )
+        
+        if matches:
             if self.debug:
-                print(f"📍 Zone OCR: '{text}'")
-            
-            return text
-            
-        except Exception as e:
-            if self.debug:
-                print(f"❌ Zone OCR failed: {e}")
-            return ""
+                print(f"  🔧 Fuzzy match: '{ocr_text}' → '{matches[0]}'")
+            return matches[0]
+        
+        # No match found, return cleaned text
+        return ocr_text_upper
     
     # Legacy color-based detection methods (deprecated, kept for reference)
     # Now using OCR-based detection instead

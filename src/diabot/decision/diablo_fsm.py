@@ -3,8 +3,10 @@
 from enum import Enum, auto
 from dataclasses import dataclass
 from typing import Optional
+from pathlib import Path
 
 from diabot.models.state import GameState, Action
+from diabot.progression import QuestManager
 
 
 class FSMState(Enum):
@@ -46,12 +48,22 @@ class DiabloFSM:
     6. IDLE - Default/waiting
     """
     
-    def __init__(self, initial_state: FSMState = FSMState.IDLE):
-        """Initialize FSM."""
+    def __init__(self, initial_state: FSMState = FSMState.IDLE, progression_file: Optional[Path] = None):
+        """Initialize FSM.
+        
+        Args:
+            initial_state: Starting FSM state
+            progression_file: Path to game_progression.json (defaults to data/game_progression.json)
+        """
         self.current_state = initial_state
         self.previous_state: Optional[FSMState] = None
         self.state_duration = 0  # Frames in current state
         self.transition_history: list[FSMTransition] = []
+        
+        # Quest management
+        if progression_file is None:
+            progression_file = Path("data/game_progression.json")
+        self.quest_manager = QuestManager(progression_file, debug=False)
         
         # Thresholds for state transitions
         self.PANIC_HP_THRESHOLD = 30.0
@@ -216,3 +228,38 @@ class DiabloFSM:
         
         last = self.transition_history[-1]
         return f"{last.from_state.name} → {last.to_state.name}: {last.reason}"
+    
+    def get_quest_guidance(self) -> str:
+        """Get guidance on what to do next based on quest progression.
+        
+        Returns:
+            Human-readable quest guidance string
+        """
+        current_quest = self.quest_manager.get_current_quest()
+        if not current_quest:
+            next_quest = self.quest_manager.get_next_quest()
+            if next_quest:
+                self.quest_manager.start_quest(next_quest.id)
+                return f"Starting: {next_quest.name} - {next_quest.objective}"
+            return "No quests available (game complete?)"
+        
+        return f"{current_quest.name}: {current_quest.objective}"
+    
+    def complete_current_quest(self) -> bool:
+        """Mark current quest as complete and advance to next.
+        
+        Returns:
+            True if quest was completed, False otherwise
+        """
+        if not self.quest_manager.current_quest_id:
+            return False
+        
+        return self.quest_manager.complete_quest(self.quest_manager.current_quest_id)
+    
+    def get_progress_summary(self) -> str:
+        """Get full game progress summary for display.
+        
+        Returns:
+            Human-readable progress string
+        """
+        return self.quest_manager.get_progress_summary()

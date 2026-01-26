@@ -75,7 +75,8 @@ class ObjectDetector:
     def detect_objects(self, frame: np.ndarray, 
                       object_types: Optional[List[str]] = None,
                       confidence_threshold: float = 0.7,
-                      max_detections: int = 10) -> List[DetectedObject]:
+                      max_detections: int = 10,
+                      roi_candidates: Optional[List] = None) -> List[DetectedObject]:
         """
         Detect objects in frame using template matching.
         
@@ -84,6 +85,7 @@ class ObjectDetector:
             object_types: List of object types to search for (None = all)
             confidence_threshold: Minimum confidence (0.0-1.0)
             max_detections: Maximum number of detections per object type
+            roi_candidates: Optional list of ROICandidate to search within (speeds up detection)
             
         Returns:
             List of detected objects
