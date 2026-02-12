@@ -7,9 +7,9 @@ in memory and persisted to disk.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import cv2
 import numpy as np
@@ -31,6 +31,27 @@ class GlobalMapCell:
     """
     cell_type: int  # CellType value
     confidence: int = 1
+    last_seen: int = 0
+
+
+@dataclass
+class MapPOI:
+    """
+    Point of Interest detected on the map.
+    
+    Attributes:
+        poi_type: Type of POI (npc, exit, waypoint, chest, shrine, etc.)
+        position: (x, y) in global map coordinates
+        label: Detected label/class name
+        confidence: Detection confidence (0.0-1.0)
+        frame_detected: Frame number when first detected
+        last_seen: Frame number when last observed
+    """
+    poi_type: str
+    position: Tuple[int, int]
+    label: str
+    confidence: float = 1.0
+    frame_detected: int = 0
     last_seen: int = 0
 
 
@@ -76,6 +97,9 @@ class MapAccumulator:
         
         # Initialize empty map
         self.cells: Dict[Tuple[int, int], GlobalMapCell] = {}
+        
+        # POI tracking (NPCs, exits, waypoints, etc.)
+        self.pois: List[MapPOI] = []
         
         # Player tracking
         self.player_world_pos = self.origin  # Current player position in global map
@@ -178,6 +202,84 @@ class MapAccumulator:
     def is_explored(self, x: int, y: int) -> bool:
         """Check if a cell has been explored."""
         return (x, y) in self.cells
+    
+    def add_poi(
+        self,
+        poi_type: str,
+        position: Tuple[int, int],
+        label: str,
+        confidence: float = 1.0
+    ):
+        """
+        Add a Point of Interest to the map.
+        
+        Args:
+            poi_type: Type (npc, exit, waypoint, chest, shrine, etc.)
+            position: (x, y) in global map coordinates
+            label: Detection label/class name
+            confidence: Detection confidence (0.0-1.0)
+        """
+        # Validate POI is within minimap visible area (64x64 cells)
+        player_x, player_y = self.player_world_pos
+        poi_x, poi_y = position
+        
+        distance_x = abs(poi_x - player_x)
+        distance_y = abs(poi_y - player_y)
+        
+        # Skip POIs outside 64x64 minimap grid (±32 cells from player)
+        if distance_x > 32 or distance_y > 32:
+            if self.debug:
+                print(f"[MapAccumulator] Skipping POI outside minimap: {label} @ {position} (offset: {distance_x}, {distance_y})")
+            return
+        
+        # Check for duplicate POIs nearby (within 5 cells)
+        for existing_poi in self.pois:
+            if existing_poi.poi_type == poi_type:
+                dx = abs(existing_poi.position[0] - position[0])
+                dy = abs(existing_poi.position[1] - position[1])
+                if dx < 5 and dy < 5:
+                    # Update last_seen only, keep original position
+                    # NPCs move around but we keep their first detected position
+                    existing_poi.last_seen = self.frame_count
+                    # Update confidence if higher
+                    if confidence > existing_poi.confidence:
+                        existing_poi.confidence = confidence
+                    if self.debug:
+                        print(f"[MapAccumulator] Seen POI: {label} @ existing pos {existing_poi.position}")
+                    return
+        
+        # Add new POI
+        poi = MapPOI(
+            poi_type=poi_type,
+            position=position,
+            label=label,
+            confidence=confidence,
+            frame_detected=self.frame_count,
+            last_seen=self.frame_count
+        )
+        self.pois.append(poi)
+        
+        if self.debug:
+            print(f"[MapAccumulator] Added POI: {label} ({poi_type}) @ {position}")
+    
+    def clear(self, keep_pois: bool = False):
+        """
+        Clear the accumulated map and reset to initial state.
+        
+        Args:
+            keep_pois: If True, keep detected POIs; if False, clear everything
+        """
+        self.cells.clear()
+        self.player_world_pos = self.origin
+        self.player_path.clear()
+        self.frame_count = 0
+        
+        if not keep_pois:
+            self.pois.clear()
+        
+        if self.debug:
+            poi_msg = "(kept POIs)" if keep_pois else ""
+            print(f"[MapAccumulator] Map cleared {poi_msg}")
     
     def find_frontiers(self, search_radius: int = 50) -> list[Tuple[int, int]]:
         """
@@ -287,6 +389,16 @@ class MapAccumulator:
             "cell_count": len(self.cells),
             "player_pos": self.player_world_pos,
             "frame_count": self.frame_count,
+            "pois": [
+                {
+                    "type": poi.poi_type,
+                    "position": poi.position,
+                    "label": poi.label,
+                    "confidence": poi.confidence,
+                    "frame_detected": poi.frame_detected,
+                }
+                for poi in self.pois
+            ],
         }
         
         json_path = self.save_dir / f"{base_name}_metadata.json"
@@ -301,12 +413,12 @@ class MapAccumulator:
         if self.debug:
             print(f"[MapAccumulator] Saved map to {png_path}")
     
-    def visualize(self, scale: int = 2) -> np.ndarray:
+    def visualize(self, scale: int = 4) -> np.ndarray:
         """
         Create visualization of accumulated map.
         
         Args:
-            scale: Upscaling factor for visibility
+            scale: Upscaling factor for visibility (default 4x)
             
         Returns:
             BGR image of the map
@@ -350,11 +462,15 @@ class MapAccumulator:
                     intensity = min(255, 100 + cell.confidence * 15)
                     img[y, x] = (0, 0, intensity)
         
-        # Draw player position
+        # Draw player position (cross marker)
         px = self.player_world_pos[0] - min_x
         py = self.player_world_pos[1] - min_y
         if 0 <= py < h and 0 <= px < w:
-            cv2.circle(img, (px, py), 3, (0, 255, 0), -1)
+            # Draw cross instead of circle for better visibility
+            size = 3
+            cv2.line(img, (px-size, py), (px+size, py), (0, 255, 0), 1)
+            cv2.line(img, (px, py-size), (px, py+size), (0, 255, 0), 1)
+            cv2.circle(img, (px, py), 1, (255, 255, 255), -1)  # Center dot
         
         # Draw player path
         for i in range(1, len(self.player_path)):
@@ -363,6 +479,30 @@ class MapAccumulator:
             pt1 = (p1[0] - min_x, p1[1] - min_y)
             pt2 = (p2[0] - min_x, p2[1] - min_y)
             cv2.line(img, pt1, pt2, (0, 200, 0), 1)
+        
+        # Draw POIs
+        poi_colors = {
+            "npc": (255, 255, 0),      # Cyan
+            "exit": (0, 165, 255),     # Orange
+            "waypoint": (255, 0, 255), # Magenta
+            "chest": (0, 215, 255),    # Gold
+            "shrine": (203, 192, 255), # Pink
+            "quest": (0, 0, 255),      # Red
+        }
+        
+        for poi in self.pois:
+            px = poi.position[0] - min_x
+            py = poi.position[1] - min_y
+            
+            if 0 <= py < h and 0 <= px < w:
+                color = poi_colors.get(poi.poi_type, (255, 255, 255))
+                # Draw single pixel (will be visible after scale)
+                img[py, px] = color
+                # Optional: small label only if scaled enough
+                if scale >= 4:
+                    label_text = poi.label[:2].upper()
+                    cv2.putText(img, label_text, (px + 2, py + 2),
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.2, color, 1)
         
         # Scale up
         img = cv2.resize(img, (w * scale, h * scale), interpolation=cv2.INTER_NEAREST)

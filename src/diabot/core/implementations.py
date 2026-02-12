@@ -85,7 +85,7 @@ class WindowsScreenCapture(ImageSource):
                 f"Window '{self.window_title}' not found. "
                 "Make sure Diablo 2 is running and the window title matches."
             )
-        print(f"[CAPTURE] ✓ Found window: {self.window_title} (hwnd={self.hwnd})")
+        print(f"[CAPTURE] Found window: {self.window_title} (hwnd={self.hwnd})")
     
     def get_frame(self, retry_count: int = 0) -> np.ndarray:
         """
@@ -154,6 +154,23 @@ class WindowsScreenCapture(ImageSource):
         if not self.hwnd:
             self._find_window()
         return win32gui.GetWindowRect(self.hwnd)
+    
+    def activate_window(self) -> bool:
+        """Bring window to foreground and set focus.
+        
+        Returns:
+            True if successful, False otherwise
+        """
+        if not self.hwnd:
+            self._find_window()
+        
+        try:
+            # Try to bring window to foreground
+            win32gui.SetForegroundWindow(self.hwnd)
+            return True
+        except Exception as e:
+            print(f"[CAPTURE] ⚠️  Failed to activate window: {e}")
+            return False
 
 
 class RuleBasedVisionModule(VisionModule):

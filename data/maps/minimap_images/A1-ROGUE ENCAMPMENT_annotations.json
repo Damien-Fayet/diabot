@@ -1,0 +1,74 @@
+{
+  "zone": "ROGUE ENCAMPMENT",
+  "map_file": "A1-ROGUE ENCAMPMENT.png",
+  "map_size": {
+    "width": 454,
+    "height": 336
+  },
+  "pois": [
+    {
+      "type": "exit",
+      "position": [
+        419,
+        257
+      ],
+      "name": "exit_1"
+    },
+    {
+      "type": "waypoint",
+      "position": [
+        300,
+        139
+      ],
+      "name": "waypoint_1"
+    },
+    {
+      "type": "stash",
+      "position": [
+        220,
+        142
+      ],
+      "name": "stash_1"
+    },
+    {
+      "type": "npc",
+      "position": [
+        365,
+        171
+      ],
+      "name": "Akara"
+    },
+    {
+      "type": "npc",
+      "position": [
+        276,
+        164
+      ],
+      "name": "Kashya"
+    },
+    {
+      "type": "npc",
+      "position": [
+        225,
+        161
+      ],
+      "name": "Warriv"
+    },
+    {
+      "type": "npc",
+      "position": [
+        109,
+        147
+      ],
+      "name": "Gheed"
+    },
+    {
+      "type": "npc",
+      "position": [
+        201,
+        94
+      ],
+      "name": "Charsi"
+    }
+  ]
+}

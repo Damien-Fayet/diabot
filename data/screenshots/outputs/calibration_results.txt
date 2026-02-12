@@ -2,12 +2,12 @@
 # Updated screen_regions.py values:
 
 UI_REGIONS = {
-    'minimap_ui': ScreenRegion(
-        name='minimap_ui',
-        x_ratio=0.6582,
-        y_ratio=0.0321,
-        w_ratio=0.3304,
-        h_ratio=0.3330,
+    'zone_ui': ScreenRegion(
+        name='zone_ui',
+        x_ratio=0.8431,
+        y_ratio=0.0197,
+        w_ratio=0.1396,
+        h_ratio=0.0549,
     ),
 }
 

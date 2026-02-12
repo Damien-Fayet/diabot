@@ -19,5 +19,6 @@
         },
         "Get-Item": true,
         ".venv\\Scripts\\python.exe": true
-    }
+    },
+        "terminal.integrated.defaultProfile.windows": "Command Prompt"
 }

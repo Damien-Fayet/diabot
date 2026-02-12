@@ -59,6 +59,7 @@ class MinimapProcessor:
     Process minimap images into occupancy grids.
     
     Converts RGB minimap to binary grid representation:
+    - Uses background subtraction to isolate minimap content
     - Detects walls using brightness and color thresholds
     - Identifies free/walkable space
     - Handles noise with morphological operations
@@ -72,8 +73,9 @@ class MinimapProcessor:
     def __init__(
         self,
         grid_size: int = 64,
-        wall_threshold: int = 49,
-        debug: bool = False
+        wall_threshold: int = 30,
+        debug: bool = False,
+        use_background_subtraction: bool = True
     ):
         """
         Initialize minimap processor with optimized parameters.
@@ -81,35 +83,67 @@ class MinimapProcessor:
         Args:
             grid_size: Size of output grid (grid_size x grid_size)
             wall_threshold: Brightness threshold for wall detection (0-255)
-                          D2R walls are BRIGHT (white/gray), free space is DARK
-                          Optimized: 49 from parameter tuning
+                          With background subtraction: 30 (tuned for difference image)
+                          Without: 49 (legacy dungeon optimization)
             debug: Enable debug output
+            use_background_subtraction: Enable automatic background subtraction
         """
         self.grid_size = grid_size
         self.wall_threshold = wall_threshold
         self.debug = debug
+        self.use_background_subtraction = use_background_subtraction
         
-        # Optimized parameters from tuning (minimap_tuned_params.txt)
-        self.crop_bottom_pct = 21  # Remove HUD
-        self.tophat_kernel = 5     # Extract bright structures (walls)
-        self.gamma = 3.0           # Strong contrast enhancement
-        self.clahe_clip = 3.9      # Local contrast
-        self.clahe_grid = 8        # CLAHE grid size
+        # Background reference frame (captured without minimap)
+        self.background_frame: np.ndarray | None = None
         
-        # Morphological kernels (optimized from tuning)
-        self.open_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
-        self.close_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (8, 8))
+        # Optimized parameters for background-subtracted processing
+        if self.use_background_subtraction:
+            self.blur_size = 3
+            self.morph_open = 2
+            self.morph_close = 3
+            self.gamma = 1.0
+            self.clahe_clip = 2.0
+        else:
+            # Legacy parameters from tuning (minimap_tuned_params.txt)
+            self.crop_bottom_pct = 21  # Remove HUD
+            self.tophat_kernel = 5     # Extract bright structures (walls)
+            self.gamma = 3.0           # Strong contrast enhancement
+            self.clahe_clip = 3.9      # Local contrast
+            self.clahe_grid = 8        # CLAHE grid size
+        
+        # Morphological kernels
+        if self.use_background_subtraction:
+            self.open_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (self.morph_open, self.morph_open))
+            self.close_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (self.morph_close, self.morph_close))
+        else:
+            self.open_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
+            self.close_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (8, 8))
         
         if self.debug:
-            print(f"[MinimapProcessor] Grid: {grid_size}, Threshold: {wall_threshold}")
-            print(f"[MinimapProcessor] Crop: {self.crop_bottom_pct}%, Gamma: {self.gamma}, TopHat: {self.tophat_kernel}")
+            mode = "BackgroundSub" if self.use_background_subtraction else "Legacy"
+            print(f"[MinimapProcessor] Mode: {mode}, Grid: {grid_size}, Threshold: {wall_threshold}")
     
-    def process(self, minimap: np.ndarray) -> MinimapGrid:
+    def set_background(self, frame: np.ndarray):
+        """
+        Set background reference frame (captured without minimap).
+        
+        This should be called once when the bot starts, with a frame
+        captured while the minimap is hidden (Tab key not pressed).
+        
+        Args:
+            frame: Full screen capture without minimap overlay
+        """
+        self.background_frame = frame.copy()
+        if self.debug:
+            print("[MinimapProcessor] Background reference frame set")
+    
+    def process(self, minimap: np.ndarray, full_frame: np.ndarray | None = None) -> MinimapGrid:
         """
         Process minimap image to occupancy grid.
         
         Args:
             minimap: Minimap image (BGR numpy array)
+            full_frame: Full screen frame with minimap (for background subtraction)
             
         Returns:
             MinimapGrid with binary occupancy data
@@ -120,90 +154,44 @@ class MinimapProcessor:
         if minimap is None or minimap.size == 0:
             raise ValueError("Minimap is empty or None")
         
-        # Convert to grayscale
-        if len(minimap.shape) == 3:
-            gray = cv2.cvtColor(minimap, cv2.COLOR_BGR2GRAY)
+        # If using background subtraction and we have both frames
+        if self.use_background_subtraction and self.background_frame is not None and full_frame is not None:
+            # Subtract background to isolate minimap content
+            diff = cv2.absdiff(full_frame, self.background_frame)
+            
+            # Extract grayscale from difference
+            if len(diff.shape) == 3:
+                gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
+            else:
+                gray = diff
+            
+            if self.debug:
+                from pathlib import Path
+                output_dir = Path("data/screenshots/outputs/diagnostic/minimap_steps")
+                output_dir.mkdir(parents=True, exist_ok=True)
+                cv2.imwrite(str(output_dir / "step0_diff.png"), gray)
         else:
-            gray = minimap
+            # Legacy mode: use minimap directly
+            if len(minimap.shape) == 3:
+                gray = cv2.cvtColor(minimap, cv2.COLOR_BGR2GRAY)
+            else:
+                gray = minimap
+            
+            if self.debug:
+                from pathlib import Path
+                output_dir = Path("data/screenshots/outputs/diagnostic/minimap_steps")
+                output_dir.mkdir(parents=True, exist_ok=True)
+                cv2.imwrite(str(output_dir / "step0_grayscale.png"), gray)
         
-        # Debug: save grayscale
-        if self.debug:
-            from pathlib import Path
-            output_dir = Path("data/screenshots/outputs/diagnostic/minimap_steps")
-            output_dir.mkdir(parents=True, exist_ok=True)
-            cv2.imwrite(str(output_dir / "step2_grayscale.png"), gray)
-        
-        # STEP 0: Crop bottom to remove HUD
-        if self.crop_bottom_pct > 0:
-            h = gray.shape[0]
-            crop_pixels = int(h * self.crop_bottom_pct / 100)
-            gray = gray[:-crop_pixels, :] if crop_pixels < h else gray
-        
-        if self.debug:
-            cv2.imwrite(str(output_dir / "step0_cropped.png"), gray)
-        
-        # STEP 1: Top Hat - Extract bright structures (walls)
-        kernel_tophat = cv2.getStructuringElement(cv2.MORPH_RECT, (self.tophat_kernel, self.tophat_kernel))
-        tophat = cv2.morphologyEx(gray, cv2.MORPH_TOPHAT, kernel_tophat)
-        gray = cv2.add(gray, tophat)
-        
-        if self.debug:
-            cv2.imwrite(str(output_dir / "step1_tophat.png"), gray)
-        
-        # STEP 2: Gamma correction (strong contrast enhancement)
-        normalized = gray.astype(np.float32) / 255.0
-        contrast_enhanced = np.power(normalized, self.gamma)
-        contrast_enhanced = (contrast_enhanced * 255).astype(np.uint8)
-        
-        if self.debug:
-            cv2.imwrite(str(output_dir / "step2_gamma.png"), contrast_enhanced)
-        
-        # STEP 3: CLAHE (local contrast enhancement)
-        clahe = cv2.createCLAHE(clipLimit=self.clahe_clip, tileGridSize=(self.clahe_grid, self.clahe_grid))
-        contrast_enhanced = clahe.apply(contrast_enhanced)
-        
-        if self.debug:
-            cv2.imwrite(str(output_dir / "step3_clahe.png"), contrast_enhanced)
-        
-        # STEP 4: Bilateral filter to reduce noise while preserving edges
-        filtered = cv2.bilateralFilter(contrast_enhanced, 5, 50, 50)
-        
-        # Debug: save filtered
-        if self.debug:
-            cv2.imwrite(str(output_dir / "step4_filtered.png"), filtered)
-        
-        # Threshold: BRIGHT pixels are walls, DARK pixels are free
-        # D2R minimap: walls = white/light gray, walkable = dark
-        # Using THRESH_BINARY: pixels > threshold = 255 (walls)
-        _, binary = cv2.threshold(
-            filtered,
-            self.wall_threshold,
-            255,
-            cv2.THRESH_BINARY  # Changed from THRESH_BINARY_INV
-        )
-        
-        # Debug: save binary threshold
-        if self.debug:
-            cv2.imwrite(str(output_dir / "step5_binary_threshold.png"), binary)
-        
-        # Morphological operations to remove noise
-        # Opening removes small bright spots (noise in walls)
-        opened = cv2.morphologyEx(binary, cv2.MORPH_OPEN, self.open_kernel)
-        
-        # Debug: save after opening
-        if self.debug:
-            cv2.imwrite(str(output_dir / "step6_morphology_open.png"), opened)
-        
-        # Closing fills small dark holes (noise in free space)
-        cleaned = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, self.close_kernel)
-        
-        # Debug: save after closing
-        if self.debug:
-            cv2.imwrite(str(output_dir / "step7_morphology_close.png"), cleaned)
+        # Branch: Background subtraction or legacy processing
+        if self.use_background_subtraction:
+            processed = self._process_with_background_sub(gray)
+        else:
+            processed = self._process_legacy(gray)
         
         # Resize to grid size
         resized = cv2.resize(
-            cleaned,
+            processed,
             (self.grid_size, self.grid_size),
             interpolation=cv2.INTER_AREA
         )
@@ -213,7 +201,7 @@ class MinimapProcessor:
             cv2.imwrite(str(output_dir / "step8_resized_grid.png"), resized)
         
         # Convert to occupancy grid
-        # Binary image: 255 = wall (bright in original), 0 = free (dark in original)
+        # Binary image: 255 = wall (bright in difference), 0 = free (dark)
         grid = np.where(resized > 127, CellType.WALL, CellType.FREE).astype(np.uint8)
         
         # Debug: Save processed minimap with walls visualization
@@ -243,6 +231,169 @@ class MinimapProcessor:
             center=center,
             cell_size=cell_size
         )
+    
+    def _process_with_background_sub(self, diff_gray: np.ndarray) -> np.ndarray:
+        """
+        Process background-subtracted minimap (NEW METHOD).
+        
+        Starting from clean difference image, apply light processing
+        to detect walls (bright areas in difference).
+        
+        Args:
+            diff_gray: Grayscale difference image
+            
+        Returns:
+            Binary image (255=wall, 0=free)
+        """
+        if self.debug:
+            from pathlib import Path
+            output_dir = Path("data/screenshots/outputs/diagnostic/minimap_steps")
+        
+        # Step 1: Gamma correction (optional, for visibility)
+        if self.gamma != 1.0:
+            inv_gamma = 1.0 / self.gamma
+            table = np.array([((i / 255.0) ** inv_gamma) * 255 
+                             for i in np.arange(0, 256)]).astype("uint8")
+            processed = cv2.LUT(diff_gray, table)
+            
+            if self.debug:
+                cv2.imwrite(str(output_dir / "step1_gamma.png"), processed)
+        else:
+            processed = diff_gray
+        
+        # Step 2: CLAHE (optional, for local contrast)
+        if self.clahe_clip > 0:
+            clahe = cv2.createCLAHE(
+                clipLimit=self.clahe_clip,
+                tileGridSize=(8, 8)
+            )
+            processed = clahe.apply(processed)
+            
+            if self.debug:
+                cv2.imwrite(str(output_dir / "step2_clahe.png"), processed)
+        
+        # Step 3: Blur to reduce noise
+        if self.blur_size > 1:
+            processed = cv2.GaussianBlur(
+                processed,
+                (self.blur_size, self.blur_size),
+                0
+            )
+            
+            if self.debug:
+                cv2.imwrite(str(output_dir / "step3_blur.png"), processed)
+        
+        # Step 4: Threshold (bright = walls)
+        _, binary = cv2.threshold(
+            processed,
+            self.wall_threshold,
+            255,
+            cv2.THRESH_BINARY
+        )
+        
+        if self.debug:
+            cv2.imwrite(str(output_dir / "step4_threshold.png"), binary)
+        
+        # Step 5: Opening (remove small noise)
+        if self.morph_open > 0:
+            binary = cv2.morphologyEx(binary, cv2.MORPH_OPEN, self.open_kernel)
+            
+            if self.debug:
+                cv2.imwrite(str(output_dir / "step5_open.png"), binary)
+        
+        # Step 6: Closing (fill small gaps)
+        if self.morph_close > 0:
+            binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, self.close_kernel)
+            
+            if self.debug:
+                cv2.imwrite(str(output_dir / "step6_close.png"), binary)
+        
+        return binary
+    
+    def _process_legacy(self, gray: np.ndarray) -> np.ndarray:
+        """
+        Process minimap using legacy method (for dungeons).
+        
+        Uses TopHat, strong gamma, CLAHE - optimized for dungeon walls.
+        
+        Args:
+            gray: Grayscale minimap
+            
+        Returns:
+            Binary image (255=wall, 0=free)
+        """
+        if self.debug:
+            from pathlib import Path
+            output_dir = Path("data/screenshots/outputs/diagnostic/minimap_steps")
+        
+        if self.debug:
+            from pathlib import Path
+            output_dir = Path("data/screenshots/outputs/diagnostic/minimap_steps")
+        
+        # STEP 0: Crop bottom to remove HUD
+        if hasattr(self, 'crop_bottom_pct') and self.crop_bottom_pct > 0:
+            h = gray.shape[0]
+            crop_pixels = int(h * self.crop_bottom_pct / 100)
+            gray = gray[:-crop_pixels, :] if crop_pixels < h else gray
+        
+        if self.debug:
+            cv2.imwrite(str(output_dir / "step0_legacy_cropped.png"), gray)
+        
+        # STEP 1: Top Hat - Extract bright structures (walls)
+        if hasattr(self, 'tophat_kernel'):
+            kernel_tophat = cv2.getStructuringElement(cv2.MORPH_RECT, (self.tophat_kernel, self.tophat_kernel))
+            tophat = cv2.morphologyEx(gray, cv2.MORPH_TOPHAT, kernel_tophat)
+            gray = cv2.add(gray, tophat)
+            
+            if self.debug:
+                cv2.imwrite(str(output_dir / "step1_legacy_tophat.png"), gray)
+            if self.debug:
+                cv2.imwrite(str(output_dir / "step1_legacy_tophat.png"), gray)
+        
+        # STEP 2: Gamma correction (strong contrast enhancement)
+        normalized = gray.astype(np.float32) / 255.0
+        contrast_enhanced = np.power(normalized, self.gamma)
+        contrast_enhanced = (contrast_enhanced * 255).astype(np.uint8)
+        
+        if self.debug:
+            cv2.imwrite(str(output_dir / "step2_legacy_gamma.png"), contrast_enhanced)
+        
+        # STEP 3: CLAHE (local contrast enhancement)
+        clahe = cv2.createCLAHE(clipLimit=self.clahe_clip, tileGridSize=(self.clahe_grid, self.clahe_grid))
+        contrast_enhanced = clahe.apply(contrast_enhanced)
+        
+        if self.debug:
+            cv2.imwrite(str(output_dir / "step3_legacy_clahe.png"), contrast_enhanced)
+        
+        # STEP 4: Bilateral filter to reduce noise while preserving edges
+        filtered = cv2.bilateralFilter(contrast_enhanced, 5, 50, 50)
+        
+        if self.debug:
+            cv2.imwrite(str(output_dir / "step4_legacy_filtered.png"), filtered)
+        
+        # Threshold: BRIGHT pixels are walls, DARK pixels are free
+        _, binary = cv2.threshold(
+            filtered,
+            self.wall_threshold,
+            255,
+            cv2.THRESH_BINARY
+        )
+        
+        if self.debug:
+            cv2.imwrite(str(output_dir / "step5_legacy_threshold.png"), binary)
+        
+        # Morphological operations
+        opened = cv2.morphologyEx(binary, cv2.MORPH_OPEN, self.open_kernel)
+        
+        if self.debug:
+            cv2.imwrite(str(output_dir / "step6_legacy_open.png"), opened)
+        
+        cleaned = cv2.morphologyEx(opened, cv2.MORPH_CLOSE, self.close_kernel)
+        
+        if self.debug:
+            cv2.imwrite(str(output_dir / "step7_legacy_close.png"), cleaned)
+        
+        return cleaned
     
     def visualize(self, minimap_grid: MinimapGrid) -> np.ndarray:
         """

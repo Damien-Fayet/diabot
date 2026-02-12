@@ -40,6 +40,7 @@ from diabot.navigation.minimap_processor import MinimapProcessor
 from diabot.navigation.player_locator import PlayerLocator
 from diabot.navigation.map_accumulator import MapAccumulator
 from diabot.navigation.exit_navigator import ExitNavigator
+from diabot.navigation.static_map_localizer import StaticMapLocalizer, load_zone_static_map
 
 
 
@@ -147,7 +148,16 @@ class DiabotRunner:
             debug=debug
         )
         self.exit_navigator = ExitNavigator(debug=debug)
-        print("[BOT] OK Navigation system ready (FrontierNavigator + MapAccumulator ACTIVE)")
+        
+        # 11. Static map localization (for zones with pre-generated maps)
+        self.static_localizer: Optional[StaticMapLocalizer] = None
+        self.static_map_annotations = None
+        self.current_target_poi = None  # Target POI from static map
+        self.static_localization_interval = 10  # Localize every N frames
+        self.frames_since_localization = 0
+        self._try_load_static_map("ROGUE ENCAMPMENT")  # Try to load Rogue Encampment map
+        
+        print("[BOT] OK Navigation system ready (FrontierNavigator + MapAccumulator + StaticMap ACTIVE)")
 
         # Minimap fullscreen toggle state
         self.minimap_fullscreen_active = False  # Track Tab minimap state
@@ -165,7 +175,7 @@ class DiabotRunner:
     
     def _load_bot_state(self) -> BotState:
         # Load bot state from file or create new.
-        if Path(self.state_file).exists():
+        if self.state_file and Path(self.state_file).exists():
             try:
                 state = load_bot_state(self.state_file)
                 print(f"[BOT] Loaded persistent state from {self.state_file}")
@@ -175,8 +185,58 @@ class DiabotRunner:
         
         return BotState()
     
+    def _try_load_static_map(self, zone_name: str):
+        """Try to load static map and annotations for a zone."""
+        import json
+        
+        # Find static map
+        static_map_path = load_zone_static_map(zone_name)
+        
+        if static_map_path is None:
+            if self.debug:
+                print(f"[BOT] No static map found for {zone_name}")
+            return
+        
+        # Load annotations
+        annotations_path = static_map_path.parent / f"{static_map_path.stem}_annotations.json"
+        
+        if not annotations_path.exists():
+            if self.debug:
+                print(f"[BOT] No annotations found for {zone_name}")
+            return
+        
+        try:
+            with open(annotations_path, 'r') as f:
+                self.static_map_annotations = json.load(f)
+            
+            # Initialize localizer
+            self.static_localizer = StaticMapLocalizer(static_map_path, debug=self.debug)
+            
+            if self.debug:
+                pois = self.static_map_annotations.get('pois', [])
+                print(f"[BOT] ✓ Loaded static map for {zone_name} with {len(pois)} POIs")
+                
+                # List POIs
+                for poi in pois:
+                    print(f"      - {poi['name']} ({poi['type']}) at {poi['position']}")
+            
+            # Set default target (first exit)
+            exits = [p for p in self.static_map_annotations.get('pois', []) if p['type'] == 'exit']
+            if exits:
+                self.current_target_poi = exits[0]
+                if self.debug:
+                    print(f"[BOT] Default target: {self.current_target_poi['name']}")
+        
+        except Exception as e:
+            print(f"[BOT] ⚠️  Error loading static map: {e}")
+            self.static_localizer = None
+            self.static_map_annotations = None
+    
     def _save_bot_state(self):
         # Save bot state to file.
+        if not self.state_file:
+            return  # No state file configured
+        
         try:
             save_bot_state(self.bot_state, self.state_file)
             if self.debug:
@@ -366,6 +426,75 @@ class DiabotRunner:
                     self.map_accumulator.update(minimap_grid, player_offset)
                     self.map_accumulator.current_zone = current_zone
                     
+                    # STEP 4b: Add detected POIs to map (YOLO detections)
+                    if perception.raw_data and "yolo_boxes" in perception.raw_data:
+                        for detection in perception.raw_data["yolo_boxes"]:
+                            # Map YOLO class to POI type
+                            class_name = detection.get("class_name", "unknown")
+                            confidence = detection.get("confidence", 0.0)
+                            bbox = detection.get("bbox", [0, 0, 0, 0])
+                            
+                            # Calculate center of detection in screen coords
+                            cx = (bbox[0] + bbox[2]) // 2
+                            cy = (bbox[1] + bbox[3]) // 2
+                            
+                            # Map detection type to POI type
+                            poi_type_map = {
+                                # Generic
+                                "npc": "npc",
+                                "person": "npc",
+                                # D2 NPCs
+                                "akara": "npc",
+                                "kashya": "npc",
+                                "warriv": "npc",
+                                # Objects
+                                "waypoint": "waypoint",
+                                "stash": "chest",
+                                "chest": "chest",
+                                "shrine": "shrine",
+                                "quest": "quest",
+                                # Exits
+                                "exit": "exit",
+                                "portal": "exit",
+                                "door": "exit",
+                            }
+                            
+                            # Direct lookup first, then substring match
+                            poi_type = poi_type_map.get(class_name.lower())
+                            if not poi_type:
+                                for key, value in poi_type_map.items():
+                                    if key.lower() in class_name.lower():
+                                        poi_type = value
+                                        break
+                            
+                            if poi_type:
+                                # Convert screen coords to global map coords
+                                # Game viewport shows ~64 cells (same as minimap grid)
+                                # Screen resolution / 64 cells = pixels per cell
+                                SCREEN_PIXELS_PER_CELL = 24.0  # Calibrated for 1920x1080
+                                
+                                # Player is at center of screen
+                                player_screen_x = frame.shape[1] // 2
+                                player_screen_y = frame.shape[0] // 2
+                                
+                                # Offset in pixels from player
+                                screen_dx = cx - player_screen_x
+                                screen_dy = cy - player_screen_y
+                                
+                                # Convert to map cells
+                                offset_x = int(screen_dx / SCREEN_PIXELS_PER_CELL)
+                                offset_y = int(screen_dy / SCREEN_PIXELS_PER_CELL)
+                                
+                                global_x = self.map_accumulator.player_world_pos[0] + offset_x
+                                global_y = self.map_accumulator.player_world_pos[1] + offset_y
+                                
+                                self.map_accumulator.add_poi(
+                                    poi_type=poi_type,
+                                    position=(global_x, global_y),
+                                    label=class_name,
+                                    confidence=confidence
+                                )
+                    
                     # STEP 5: Decide navigation mode
                     should_explore = self.exit_navigator.should_explore_instead(
                         self.map_accumulator,
@@ -378,7 +507,118 @@ class DiabotRunner:
                         self.navigation_mode = "exit_seek"
                     
                     # STEP 6: Execute navigation based on mode
-                    if self.navigation_mode == "exit_seek":
+                    static_nav_active = False
+                    if self.static_localizer and self.current_target_poi:
+                        # Only localize every N frames (expensive operation)
+                        if self.frames_since_localization >= self.static_localization_interval:
+                            try:
+                                if self.debug:
+                                    print(f"[STATIC_NAV] Attempting localization (frame {self.frame_count}, counter={self.frames_since_localization})")
+                                
+                                # Localize player on static map
+                                localization = self.static_localizer.localize(minimap_grid.grid, use_edges=True, multi_scale=True)
+                                self.frames_since_localization = 0  # Reset counter
+                                
+                                if localization.found and localization.match_quality in ["good", "excellent"]:
+                                    # We know where we are on the static map!
+                                    player_x, player_y = localization.position
+                                    target_x, target_y = self.current_target_poi['position']
+                                    
+                                    # Calculate direction to target
+                                    angle, distance, dx, dy = self.static_localizer.get_direction_to_target(
+                                        (player_x, player_y),
+                                        (target_x, target_y)
+                                    )
+                                    
+                                    if self.debug:
+                                        print(f"[STATIC_NAV] Localization: {localization.match_quality} (conf={localization.confidence:.3f})")
+                                        print(f"[STATIC_NAV] Player@({player_x},{player_y}) -> "
+                                              f"{self.current_target_poi['name']}@({target_x},{target_y})")
+                                        print(f"[STATIC_NAV] Direction: {angle:.1f}°, Distance: {distance:.1f}px")
+                                        
+                                        # Save debug visualization
+                                        from datetime import datetime
+                                        
+                                        debug_img = self.static_localizer.static_map.copy()
+                                        
+                                        # Draw player position (green)
+                                        cv2.circle(debug_img, (player_x, player_y), 8, (0, 255, 0), -1)
+                                        cv2.putText(debug_img, "Player", (player_x + 12, player_y - 5),
+                                                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                                        
+                                        # Draw target position (red)
+                                        cv2.circle(debug_img, (target_x, target_y), 8, (0, 0, 255), -1)
+                                        cv2.putText(debug_img, self.current_target_poi['name'], 
+                                                   (target_x + 12, target_y - 5),
+                                                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                                        
+                                        # Draw line between player and target (yellow)
+                                        cv2.arrowedLine(debug_img, (player_x, player_y), (target_x, target_y),
+                                                       (0, 255, 255), 2, tipLength=0.05)
+                                        
+                                        # Add info text
+                                        info_text = [
+                                            f"Confidence: {localization.confidence:.3f}",
+                                            f"Angle: {angle:.1f}deg",
+                                            f"Distance: {distance:.1f}px"
+                                        ]
+                                        for i, line in enumerate(info_text):
+                                            cv2.putText(debug_img, line, (10, 20 + i * 20),
+                                                       cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                                        
+                                        # Save
+                                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                                        debug_path = f"data/screenshots/outputs/static_nav_debug_{timestamp}.png"
+                                        cv2.imwrite(debug_path, debug_img)
+                                        print(f"[STATIC_NAV] Debug image saved: {debug_path}")
+                                    
+                                    # Convert direction to screen click position
+                                    # Map center is player, we click in direction of target
+                                    screen_center_x = frame.shape[1] // 2
+                                    screen_center_y = frame.shape[0] // 2
+                                    
+                                    # Click distance from center (scaled)
+                                    click_distance = min(200, distance * 2)  # Limit click distance
+                                    
+                                    # Calculate click position
+                                    click_x = screen_center_x + int(dx * click_distance)
+                                    click_y = screen_center_y + int(dy * click_distance)
+                                    
+                                    # Clamp to screen bounds
+                                    click_x = max(0, min(frame.shape[1] - 1, click_x))
+                                    click_y = max(0, min(frame.shape[0] - 1, click_y))
+                                    
+                                    # Execute movement
+                                    action = Action(
+                                        action_type="move",
+                                        target=self.current_target_poi['name'],
+                                        params={"position": (click_x, click_y)}
+                                    )
+                                    self.executor.execute(action, frame)
+                                    
+                                    if self.debug:
+                                        print(f"[STATIC_NAV] Moving to ({click_x}, {click_y})")
+                                    
+                                    # Check if reached target (within 20 pixels)
+                                    if distance < 20:
+                                        print(f"[STATIC_NAV] ✓ Reached {self.current_target_poi['name']}!")
+                                        # Switch to next target or exit
+                                        self.current_target_poi = None
+                                    
+                                    static_nav_active = True
+                            
+                            except Exception as e:
+                                if self.debug:
+                                    print(f"[STATIC_NAV] Error: {e}")
+                        else:
+                            # Between localizations, just increment counter
+                            self.frames_since_localization += 1
+                    else:
+                        if self.debug and self.frame_count % 20 == 0:
+                            print(f"[STATIC_NAV] Not active: localizer={self.static_localizer is not None}, target={self.current_target_poi is not None}")
+                    
+                    # Fallback to standard navigation if static map not available or failed
+                    if not static_nav_active and self.navigation_mode == "exit_seek":
                         # Find and navigate to best exit candidate
                         exit_candidates = self.exit_navigator.find_exit_candidates(
                             self.map_accumulator,

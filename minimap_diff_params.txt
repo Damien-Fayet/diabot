@@ -1,0 +1,7 @@
+# Minimap parameters (background subtracted)
+threshold = 30
+blur_size = 3
+morph_open = 2
+morph_close = 3
+gamma = 1.0
+clahe_clip = 2.0

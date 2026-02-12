@@ -113,28 +113,9 @@ class UIVisionModule:
         Returns:
             UIState with detected UI info
         """
-        # Extract text regions (BGR format for OCR)
-        lifebar_region = UI_REGIONS['lifebar_ui'].extract_from_frame(frame)
-        manabar_region = UI_REGIONS['manabar_ui'].extract_from_frame(frame)
-        zone_region = UI_REGIONS['zone_ui'].extract_from_frame(frame)
-        
-        # Read values via OCR
-        hp_ratio = self._read_bar_via_ocr(lifebar_region, "HP")
-        
-        # Try alternative preprocessing if primary fails
-        if hp_ratio == 0.5:  # fallback value means OCR failed
-            hp_ratio_alt = self._read_bar_via_ocr_alternative(lifebar_region, "HP")
-            if hp_ratio_alt != 0.5:
-                hp_ratio = hp_ratio_alt
-        
-        mana_ratio = self._read_bar_via_ocr(manabar_region, "Mana")
-        
-        if mana_ratio == 0.5:
-            mana_ratio_alt = self._read_bar_via_ocr_alternative(manabar_region, "Mana")
-            if mana_ratio_alt != 0.5:
-                mana_ratio = mana_ratio_alt
-        
-        zone_name = self._read_zone_via_ocr(zone_region)
+        hp_ratio = self.extract_hp(frame)
+        mana_ratio = self.extract_mana(frame)
+        zone_name = self.extract_zone(frame)
         
         # Detect potions (simplified - not yet implemented)
         potions = {'health': 0, 'mana': 0, 'rejuvenation': 0}
@@ -145,6 +126,84 @@ class UIVisionModule:
             zone_name=zone_name,
             potions_available=potions,
         )
+    
+    def extract_hp(self, frame: np.ndarray) -> float:
+        """
+        Extract HP ratio from frame using OCR.
+        
+        Args:
+            frame: BGR image from game
+            
+        Returns:
+            HP ratio (0.0-1.0)
+        """
+        lifebar_region = UI_REGIONS['lifebar_ui'].extract_from_frame(frame)
+        hp_ratio = self._read_bar_via_ocr(lifebar_region, "HP")
+        
+        # Try alternative preprocessing if primary fails
+        if hp_ratio == 0.5:  # fallback value means OCR failed
+            hp_ratio_alt = self._read_bar_via_ocr_alternative(lifebar_region, "HP")
+            if hp_ratio_alt != 0.5:
+                hp_ratio = hp_ratio_alt
+        
+        return hp_ratio
+    
+    def extract_mana(self, frame: np.ndarray) -> float:
+        """
+        Extract Mana ratio from frame using OCR.
+        
+        Args:
+            frame: BGR image from game
+            
+        Returns:
+            Mana ratio (0.0-1.0)
+        """
+        manabar_region = UI_REGIONS['manabar_ui'].extract_from_frame(frame)
+        mana_ratio = self._read_bar_via_ocr(manabar_region, "Mana")
+        
+        # Try alternative preprocessing if primary fails
+        if mana_ratio == 0.5:
+            mana_ratio_alt = self._read_bar_via_ocr_alternative(manabar_region, "Mana")
+            if mana_ratio_alt != 0.5:
+                mana_ratio = mana_ratio_alt
+        
+        return mana_ratio
+    
+    def extract_zone(self, frame: np.ndarray) -> str:
+        """
+        Extract zone name from frame using OCR.
+        
+        Args:
+            frame: BGR image from game
+            
+        Returns:
+            Zone name string (e.g. "ROGUE ENCAMPMENT")
+        """
+        zone_region = UI_REGIONS['zone_ui'].extract_from_frame(frame)
+        zone_name = self._read_zone_via_ocr(zone_region)
+        return zone_name
+    
+    def is_minimap_visible(self, frame: np.ndarray) -> bool:
+        """
+        Check if fullscreen minimap is currently visible.
+        
+        Uses zone OCR to determine minimap state:
+        - If zone name matches a known zone after fuzzy matching: minimap is visible
+        - Otherwise: minimap is hidden
+        
+        Args:
+            frame: BGR image from game
+            
+        Returns:
+            True if fullscreen minimap is visible, False otherwise
+        """
+        zone_name = self.extract_zone(frame)
+        
+        # Minimap is visible only if the zone name matches a known zone
+        # This filters out OCR artifacts like single letters or random characters
+        if zone_name and zone_name in self.known_zones:
+            return True
+        return False
     
     def _read_bar_via_ocr(self, region: np.ndarray, bar_name: str) -> float:
         """
@@ -221,16 +280,17 @@ class UIVisionModule:
         for config, label in configs:
             try:
                 result = pytesseract.image_to_string(cleaned, config=config).strip()
-                if self.debug:
-                    print(f"  [{label}] → '{result}'")
+                # if self.debug:
+                #     print(f"  [{label}] → '{result}'")
                 if result:  # First non-empty result wins
                     text = result
-                    if self.debug:
-                        print(f"📖 {bar_name} OCR success with {label}: '{text}'")
+                    # if self.debug:
+                    #     print(f"📖 {bar_name} OCR success with {label}: '{text}'")
                     break
             except Exception as e:
-                if self.debug:
-                    print(f"  [{label}] → ERROR: {e}")
+                # if self.debug:
+                #     print(f"  [{label}] → ERROR: {e}")
+                pass
         
         if not text and self.debug:
             print(f"📖 {bar_name} OCR: '' (all configs failed)")
@@ -316,23 +376,23 @@ class UIVisionModule:
             
             if maximum > 0:
                 ratio = current / maximum
-                if self.debug:
-                    print(f"  → {bar_name}: {current}/{maximum} = {ratio:.2%}")
+                # if self.debug:
+                #     print(f"  → {bar_name}: {current}/{maximum} = {ratio:.2%}")
                 return max(0.0, min(1.0, ratio))
         
         # Try to match just a single number
         match = re.search(r'(\d+)', text)
         if match:
             value = int(match.group(1))
-            if self.debug:
-                print(f"  → {bar_name}: Got single value {value}, assuming mid-range")
+            # if self.debug:
+            #     print(f"  → {bar_name}: Got single value {value}, assuming mid-range")
             # Without max, assume some reasonable range
             # Could use heuristics based on typical HP/Mana values
             return 0.5
         
         # Failed to parse
-        if self.debug:
-            print(f"  → {bar_name}: Could not parse '{text}', using fallback")
+        # if self.debug:
+        #     print(f"  → {bar_name}: Could not parse '{text}', using fallback")
         return 0.5
     
     def _read_zone_via_ocr(self, region: np.ndarray) -> str:
@@ -355,12 +415,15 @@ class UIVisionModule:
                 print(f"⚠️  Zone: Tesseract not available")
             return ""
         
+        import os
+        debug_dir = "data/screenshots/outputs/diagnostic"
+        os.makedirs(debug_dir, exist_ok=True)
+        
         # Debug: save original zone region
         if self.debug:
-            debug_path = "data/screenshots/outputs/diagnostic/ocr_Zone_0_original.png"
-            import os
-            os.makedirs(os.path.dirname(debug_path), exist_ok=True)
+            debug_path = f"{debug_dir}/ocr_Zone_0_original.png"
             cv2.imwrite(debug_path, region)
+            print(f"🔍 [Zone OCR] Processing region: {region.shape}")
         
         # Try color-based filtering first (Diablo 2 zone text is gold/yellow)
         hsv = cv2.cvtColor(region, cv2.COLOR_BGR2HSV)
@@ -374,7 +437,7 @@ class UIVisionModule:
         
         # Debug: save color mask
         if self.debug:
-            debug_path = "data/screenshots/outputs/diagnostic/ocr_Zone_1_color_mask.png"
+            debug_path = f"{debug_dir}/ocr_Zone_1_color_mask.png"
             cv2.imwrite(debug_path, mask)
         
         # SIMPLIFIED: Use color mask directly for OCR, skip grayscale and binary
@@ -387,44 +450,39 @@ class UIVisionModule:
         
         # Debug: save final preprocessed zone image
         if self.debug:
-            debug_path = "data/screenshots/outputs/diagnostic/ocr_Zone_7_final.png"
-            import os
-            os.makedirs(os.path.dirname(debug_path), exist_ok=True)
+            debug_path = f"{debug_dir}/ocr_Zone_2_cleaned.png"
             cv2.imwrite(debug_path, cleaned)
         
-        # OCR configuration - try multiple PSM modes
-        configs = [
-            ('--psm 7 --oem 1', 'PSM7+OEM1'),  # Single text line
-            ('--psm 6 --oem 1', 'PSM6+OEM1'),  # Uniform block
-            ('--psm 3 --oem 1', 'PSM3+OEM1'),  # Fully automatic
-        ]
+        # OCR configuration - PSM 7 (single text line) works best for zone names
+        # tessedit_write_images=true saves Tesseract's internal processing steps
+        config = '--psm 7 --oem 1 -c tessedit_write_images=true'
         
         text = ""
-        for config, label in configs:
-            try:
-                result = pytesseract.image_to_string(cleaned, config=config).strip()
+        try:
+            result = pytesseract.image_to_string(cleaned, config=config).strip()
+            if self.debug:
+                print(f"  [PSM7] → '{result}'")
+            if result:
+                # Clean up: remove extra whitespace, remove common OCR artifacts
+                text = ' '.join(result.split())
+                # Remove noise: keep only letters, spaces, and common punctuation
+                text = re.sub(r'[^A-Za-z\s\'-]', '', text)
+                text = text.strip()
                 if self.debug:
-                    print(f"  [{label}] → '{result}'")
-                if result:  # First non-empty wins
-                    # Clean up: remove extra whitespace, remove common OCR artifacts
-                    text = ' '.join(result.split())
-                    # Remove noise: keep only letters, spaces, and common punctuation
-                    text = re.sub(r'[^A-Za-z\s\'-]', '', text)
-                    text = text.strip()
-                    if self.debug:
-                        print(f"📍 Zone OCR success with {label}: '{text}'")
-                    if text:  # Only break if we have actual text after cleaning
-                        break
-            except Exception as e:
-                if self.debug:
-                    print(f"  [{label}] → ERROR: {e}")
+                    print(f"📍 Zone OCR cleaned text: '{text}'")
+        except Exception as e:
+            if self.debug:
+                print(f"  [PSM7] → ERROR: {e}")
         
         if not text and self.debug:
-            print(f"📍 Zone OCR: '' (all configs failed)")
+            print(f"📍 Zone OCR failed")
         
         # Apply fuzzy matching for known zone names
         if text:
             text = self._correct_zone_name(text)
+        
+        if self.debug:
+            print(f"📍 Zone OCR final result: '{text}'\n")
         
         return text
     

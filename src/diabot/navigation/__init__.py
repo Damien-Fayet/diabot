@@ -13,6 +13,7 @@ from .local_map import LocalMap, Frontier
 from .pose_estimator import PoseEstimator, Pose
 from .frontier_navigator import FrontierNavigator, NavigationAction, NavigationState
 from .nav_visualization import NavigationOverlay, draw_pose_arrow, draw_path_on_frame
+from .static_map_localizer import StaticMapLocalizer, load_zone_static_map, LocalizationResult
 
 __all__ = [
     'WorldMapManager',
@@ -42,4 +43,7 @@ __all__ = [
     'NavigationOverlay',
     'draw_pose_arrow',
     'draw_path_on_frame',
+    'StaticMapLocalizer',
+    'load_zone_static_map',
+    'LocalizationResult',
 ]

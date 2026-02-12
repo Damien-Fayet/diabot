@@ -93,10 +93,10 @@ UI_REGIONS = {
     ),
     'zone_ui': ScreenRegion(
         name='zone_ui',
-        x_ratio=0.88,      # Calibrated for 1940x1123
-        y_ratio=0.0232,      # Calibrated for 1940x1123
-        w_ratio=0.10,      # Calibrated for 1940x1123
-        h_ratio=0.0383,      # Calibrated for 1940x1123
+        x_ratio=0.8431,
+        y_ratio=0.0197,
+        w_ratio=0.1396,
+        h_ratio=0.0549,
     ),
 }
 

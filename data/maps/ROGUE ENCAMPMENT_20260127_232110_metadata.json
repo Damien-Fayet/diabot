@@ -1,0 +1,113 @@
+{
+  "zone": "ROGUE ENCAMPMENT",
+  "timestamp": "20260127_232110",
+  "map_size": 2048,
+  "cell_count": 4096,
+  "player_pos": [
+    1024,
+    1024
+  ],
+  "frame_count": 100,
+  "pois": [
+    {
+      "type": "chest",
+      "position": [
+        1010,
+        1019
+      ],
+      "label": "stash",
+      "confidence": 0.966370701789856,
+      "frame_detected": 2
+    },
+    {
+      "type": "chest",
+      "position": [
+        1002,
+        1014
+      ],
+      "label": "stash",
+      "confidence": 0.9882596731185913,
+      "frame_detected": 2
+    },
+    {
+      "type": "waypoint",
+      "position": [
+        1051,
+        1024
+      ],
+      "label": "waypoint",
+      "confidence": 0.9931235909461975,
+      "frame_detected": 3
+    },
+    {
+      "type": "npc",
+      "position": [
+        1006,
+        1023
+      ],
+      "label": "warriv",
+      "confidence": 0.5203192234039307,
+      "frame_detected": 3
+    },
+    {
+      "type": "waypoint",
+      "position": [
+        1042,
+        1020
+      ],
+      "label": "waypoint",
+      "confidence": 0.9715681672096252,
+      "frame_detected": 4
+    },
+    {
+      "type": "npc",
+      "position": [
+        995,
+        1018
+      ],
+      "label": "warriv",
+      "confidence": 0.7574224472045898,
+      "frame_detected": 4
+    },
+    {
+      "type": "waypoint",
+      "position": [
+        1023,
+        1028
+      ],
+      "label": "waypoint",
+      "confidence": 0.522108793258667,
+      "frame_detected": 5
+    },
+    {
+      "type": "waypoint",
+      "position": [
+        1019,
+        1036
+      ],
+      "label": "waypoint",
+      "confidence": 0.9940127730369568,
+      "frame_detected": 6
+    },
+    {
+      "type": "waypoint",
+      "position": [
+        1013,
+        1035
+      ],
+      "label": "waypoint",
+      "confidence": 0.836655855178833,
+      "frame_detected": 20
+    },
+    {
+      "type": "waypoint",
+      "position": [
+        1028,
+        1035
+      ],
+      "label": "waypoint",
+      "confidence": 0.9974314570426941,
+      "frame_detected": 33
+    }
+  ]
+}
