@@ -2,6 +2,10 @@
 """
 Test script for static map localization - Isometric structure-based approach.
 Uses oriented filtering to detect isometric game structures (fences, walls, paths).
+
+Usage:
+  python test_static_localization_v3.py           # Live capture mode
+  python test_static_localization_v3.py --static   # Use static images from inputs/
 """
 import sys
 from pathlib import Path
@@ -11,6 +15,7 @@ from datetime import datetime
 import time
 import pyautogui
 import json
+import argparse
 
 # Setup path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
@@ -41,6 +46,39 @@ def save_debug_image(img, name, output_dir):
 # ============================================================================
 # STEP 1: FRAME CAPTURE (same as v2)
 # ============================================================================
+
+def load_static_images(output_dir):
+    """Load pre-captured images from inputs folder."""
+    inputs_dir = Path(__file__).parent / "data" / "screenshots" / "inputs"
+    
+    # Try to find most recent images
+    without_images = sorted(inputs_dir.glob("*_without_minimap*.png"))
+    with_images = sorted(inputs_dir.glob("*_with_minimap*.png"))
+    
+    if not without_images or not with_images:
+        print(f"[!] No input images found in {inputs_dir}")
+        print("    Expected files: *_without_minimap*.png and *_with_minimap*.png")
+        return None, None
+    
+    # Use most recent files
+    frame_without = cv2.imread(str(without_images[-1]))
+    frame_with = cv2.imread(str(with_images[-1]))
+    
+    if frame_without is None or frame_with is None:
+        print("[!] Failed to load input images")
+        return None, None
+    
+    print(f"OK Loaded: {without_images[-1].name}")
+    print(f"   Shape: {frame_without.shape}")
+    print(f"OK Loaded: {with_images[-1].name}")
+    print(f"   Shape: {frame_with.shape}")
+    
+    # Save copies to output for comparison
+    save_debug_image(frame_without, "01_frame_without_minimap", output_dir)
+    save_debug_image(frame_with, "02_frame_with_minimap", output_dir)
+    
+    return frame_without, frame_with
+
 
 def ensure_minimap_hidden(capture, ui_vision, max_attempts=3):
     """Ensure minimap is hidden before capturing background."""
@@ -609,8 +647,18 @@ def match_with_static_map(minimap_lines, zone_name, image_shape, output_dir):
 
 def main():
     """Main test function."""
+    # Parse arguments
+    parser = argparse.ArgumentParser(description='Test static map localization v3')
+    parser.add_argument('--static', action='store_true', 
+                       help='Use static images from inputs/ folder instead of live capture')
+    args = parser.parse_args()
+    
     print("=" * 70)
     print("STATIC MAP LOCALIZATION TEST v3 - Isometric Structure Detection")
+    if args.static:
+        print("MODE: Static Images (from inputs/)")
+    else:
+        print("MODE: Live Capture")
     print("=" * 70)
     print()
     
@@ -623,28 +671,35 @@ def main():
     # Initialize
     try:
         print("=" * 70)
-        print("STEP 1: Screen Capture")
+        print("STEP 1: Frame Acquisition")
         print("=" * 70)
         
-        capture = WindowsScreenCapture()
-        print(f"OK Found window: {capture.window_title}")
-        
-        ui_vision = UIVisionModule(debug=True)
-        print("\n[*] Verifying minimap is HIDDEN...")
-        
-        # Ensure minimap is hidden
-        ensure_minimap_hidden(capture, ui_vision)
-        print("OK Minimap should now be hidden")
-        
-        # Capture background
-        frame_without_minimap = capture_background_frame(capture, output_dir)
-        if frame_without_minimap is None:
-            return
-        
-        # Show minimap and capture
-        frame_with_minimap = show_minimap_and_capture(capture, ui_vision, output_dir)
-        if frame_with_minimap is None:
-            return
+        if args.static:
+            # Load static images from inputs folder
+            frame_without_minimap, frame_with_minimap = load_static_images(output_dir)
+            if frame_without_minimap is None or frame_with_minimap is None:
+                return
+        else:
+            # Live capture mode
+            capture = WindowsScreenCapture()
+            print(f"OK Found window: {capture.window_title}")
+            
+            ui_vision = UIVisionModule(debug=True)
+            print("\n[*] Verifying minimap is HIDDEN...")
+            
+            # Ensure minimap is hidden
+            ensure_minimap_hidden(capture, ui_vision)
+            print("OK Minimap should now be hidden")
+            
+            # Capture background
+            frame_without_minimap = capture_background_frame(capture, output_dir)
+            if frame_without_minimap is None:
+                return
+            
+            # Show minimap and capture
+            frame_with_minimap = show_minimap_and_capture(capture, ui_vision, output_dir)
+            if frame_with_minimap is None:
+                return
         
         # Detect zone first
         ui_vision_zone = UIVisionModule(debug=False)
