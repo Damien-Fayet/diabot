@@ -1,8 +1,26 @@
+# Core dependencies
 opencv-python>=4.8.0
 numpy>=1.24.0
-dataclasses-json>=0.6.1
 Pillow>=10.0.0
-pytest>=7.4.0
 
-# ML training/inference
+# Data handling
+dataclasses-json>=0.6.1
+
+# ML/Computer Vision
 ultralytics>=8.2.0
+
+# Automation
+pyautogui>=0.9.54
+
+# Visualization
+matplotlib>=3.7.0
+
+# OCR
+pytesseract>=0.3.10
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# Windows support (optional - install only on Windows)
+# pywin32>=306  # Uncomment on Windows for win32gui, win32con, win32ui

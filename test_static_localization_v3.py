@@ -186,7 +186,31 @@ def compute_minimap_difference(frame_without, frame_with, output_dir):
         save_debug_image(diff_gray_clean, "04b_diff_grey_cleaned used by mask", output_dir)
     else:
         diff_gray_clean = diff_gray_filtered
-    return diff_gray_clean
+    
+    # STEP 3: Remove bright crosses (NPCs) by thresholding very bright pixels
+    print(f"[*] Removing bright NPC crosses...")
+    
+    # Debug: show actual brightness distribution
+    print(f"   Brightness range in cleaned diff: [{diff_gray_clean.min()}, {diff_gray_clean.max()}]")
+    
+    # Threshold to identify bright NPC crosses
+    npc_threshold = 150  # Threshold for NPC crosses
+    _, npc_mask = cv2.threshold(diff_gray_clean, npc_threshold, 255, cv2.THRESH_BINARY)
+    
+    # Debug: count how many pixels are above threshold
+    npc_pixels = np.count_nonzero(npc_mask)
+    print(f"   NPC mask - pixels >= {npc_threshold}: {npc_pixels}")
+    
+    # Save NPC mask for debugging
+    save_debug_image(npc_mask, "04c_npc_detected_mask", output_dir)
+    
+    # Directly subtract NPC pixels from the image (set them to black)
+    diff_gray_no_npc = cv2.bitwise_and(diff_gray_clean, cv2.bitwise_not(npc_mask))
+    print(f"   NPCs removed from image")
+    
+    save_debug_image(diff_gray_no_npc, "04d_diff_no_npc", output_dir)
+    
+    return diff_gray_no_npc
 
 
 # ============================================================================
@@ -258,24 +282,38 @@ def apply_adaptive_threshold(image, output_dir):
     print("STEP 4: Adaptive Thresholding")
     print("="*70)
     
+    _, white_mask = cv2.threshold(image, 40, 255, cv2.THRESH_BINARY)
+    save_debug_image(white_mask, "09_thresh", output_dir)
     # Gaussian blur to reduce texture noise
-    blurred = cv2.GaussianBlur(image, (5, 5), 0)
+    blurred = cv2.GaussianBlur(white_mask, (5, 5), 0)
     save_debug_image(blurred, "09a_blurred", output_dir)
     
     # Adaptive threshold
     # C parameter: higher = stricter (fewer white pixels)
-    adaptive = cv2.adaptiveThreshold(
-        blurred,
-        255,
-        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-        cv2.THRESH_BINARY_INV,  # INV = lines become white on black background
-        blockSize=15,  # Larger block for more context
-        C=6  # Higher C = stricter threshold
-    )
-    save_debug_image(adaptive, "09b_adaptive_threshold", output_dir)
+    # adaptive = cv2.adaptiveThreshold(
+    #     blurred,
+    #     255,
+    #     cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+    #     cv2.THRESH_BINARY_INV,  # INV = lines become white on black background
+    #     blockSize=15,  # Larger block for more context
+    #     C=8  # Higher C = stricter threshold
+    # )
+    # save_debug_image(adaptive, "09b_adaptive_threshold", output_dir)
+    
+    # Thicken parallel lines: dilate to merge nearby edges
+    print("   Thickening parallel lines with morphological dilation...")
+    kernel_dilate = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    adaptive_thick = cv2.dilate(blurred, kernel_dilate, iterations=1)
+    save_debug_image(adaptive_thick, "09c_adaptive_thickened", output_dir)
+    
+    # Close gaps with morphological closing
+    # print("   Closing gaps between lines...")
+    # kernel_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
+    # adaptive_closed = cv2.morphologyEx(adaptive_thick, cv2.MORPH_CLOSE, kernel_close, iterations=1)
+    # save_debug_image(adaptive_closed, "09d_adaptive_closed", output_dir)
     
     print("OK Adaptive thresholding complete")
-    return adaptive
+    return blurred, adaptive_thick
 
 
 # ============================================================================
@@ -291,7 +329,7 @@ def create_oriented_kernels():
     # This means: for every 2 pixels RIGHT (j+2), go 3 pixels UP (i-3)
     kernel_60 = np.zeros((size, size), dtype=np.uint8)
     for step in range(size):
-        j = step * 2 // 3  # Horizontal position
+        j = step * 4 // 3  # Horizontal position
         i = size - 1 - step  # Vertical position (going up)
         if 0 <= i < size and 0 <= j < size:
             kernel_60[i, j] = 1
@@ -301,10 +339,10 @@ def create_oriented_kernels():
     kernels['isometric_60'] = kernel_60
     
     # For 120°: tan(120°) ≈ -1.732 ≈ -3/2 ratio  
-    # This means: for every 2 pixels RIGHT (j+2), go 3 pixels DOWN (i+3)
+    # This means: for every 4 pixels RIGHT (j+4), go 3 pixels DOWN (i+3)
     kernel_120 = np.zeros((size, size), dtype=np.uint8)
     for step in range(size):
-        j = step * 2 // 3  # Horizontal position
+        j = step * 4 // 3  # Horizontal position
         i = step  # Vertical position (going down)
         if 0 <= i < size and 0 <= j < size:
             kernel_120[i, j] = 1
@@ -540,10 +578,134 @@ def create_line_image(lines, shape):
     return img
 
 
-def match_with_static_map(minimap_lines, zone_name, image_shape, output_dir):
-    """Match minimap line structure with static map."""
+def prepare_edges_for_ecc(img, blur_kernel=5):
+    """Prepare edge image for ECC alignment.
+    
+    Args:
+        img: Input image (can be binary or grayscale)
+        blur_kernel: Gaussian blur kernel size
+        
+    Returns:
+        Normalized float32 image (0-1) with smoothed edges
+    """
+    # Ensure grayscale
+    if len(img.shape) == 3:
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = img.copy()
+    
+    # Smooth the edges
+    smoothed = cv2.GaussianBlur(gray, (blur_kernel, blur_kernel), 1.0)
+    
+    # Normalize to [0, 1] float32
+    normalized = smoothed.astype(np.float32) / 255.0
+    
+    return normalized
+
+
+def build_image_pyramid(img, levels=4):
+    """Build a Gaussian pyramid for multi-scale alignment.
+    
+    Args:
+        img: Input image (float32)
+        levels: Number of pyramid levels
+        
+    Returns:
+        List of pyramid levels (coarse to fine)
+    """
+    pyramid = [img]
+    current = img.copy()
+    
+    for i in range(levels - 1):
+        current = cv2.pyrDown(current)
+        pyramid.append(current)
+    
+    return pyramid[::-1]  # Return coarse-to-fine
+
+
+def align_with_ecc(query_img, ref_img, motion_type='AFFINE', output_dir=None):
+    """Align query_img to ref_img using ECC with multi-scale pyramid.
+    
+    Args:
+        query_img: Query image (minimap edges, float32)
+        ref_img: Reference image (static map edges, float32)
+        motion_type: 'AFFINE' or 'HOMOGRAPHY'
+        output_dir: Directory to save debug images
+        
+    Returns:
+        (warp_matrix, cc_score) where warp_matrix aligns query to reference
+    """
+    print("\n   Building image pyramids...")
+    
+    # Build pyramids
+    query_pyramid = build_image_pyramid(query_img, levels=4)
+    ref_pyramid = build_image_pyramid(ref_img, levels=4)
+    
+    print(f"   Pyramid levels: {len(query_pyramid)}")
+    
+    # Set motion type
+    if motion_type == 'AFFINE':
+        warp_mode = cv2.MOTION_AFFINE
+        warp_matrix = np.eye(2, 3, dtype=np.float32)
+    else:  # HOMOGRAPHY
+        warp_mode = cv2.MOTION_HOMOGRAPHY
+        warp_matrix = np.eye(3, 3, dtype=np.float32)
+    
+    # Multi-scale ECC alignment (coarse to fine)
+    criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 5000, 1e-6)
+    
+    for level in range(len(query_pyramid)):
+        print(f"   Level {level+1}/{len(query_pyramid)} (scale {2**(len(query_pyramid)-level-1)})...")
+        
+        query_level = query_pyramid[level]
+        ref_level = ref_pyramid[level]
+        
+        print(f"      Shapes - Query: {query_level.shape}, Ref: {ref_level.shape}")
+        print(f"      Query range: [{query_level.min():.3f}, {query_level.max():.3f}]")
+        print(f"      Ref range: [{ref_level.min():.3f}, {ref_level.max():.3f}]")
+        
+        try:
+            cc, warp_matrix = cv2.findTransformECC(
+                query_level,
+                ref_level,
+                warp_matrix,
+                warp_mode,
+                criteria
+            )
+            print(f"      ✓ ECC score: {cc:.4f}")
+        except cv2.error as e:
+            print(f"      [!] ECC failed: {str(e)[:100]}")
+            # Continue anyway - keep previous warp_matrix
+            continue
+        
+        # Scale warp_matrix for next level (only if it converged)
+        if level < len(query_pyramid) - 1:
+            if motion_type == 'AFFINE':
+                warp_matrix[0, 2] *= 2
+                warp_matrix[1, 2] *= 2
+            else:
+                warp_matrix[0, 2] *= 2
+                warp_matrix[1, 2] *= 2
+                warp_matrix[2, 0] *= 0.5
+                warp_matrix[2, 1] *= 0.5
+    
+    return warp_matrix, cc if 'cc' in locals() else 0.0
+
+
+def match_with_static_map_ecc(adaptive_img, zone_name, image_shape, output_dir):
+    """Match adaptive image edges with static map using ECC alignment.
+    
+    Args:
+        adaptive_img: Binary edge image from minimap difference
+        zone_name: Name of the zone to find static map
+        image_shape: Shape of the original image (H, W, C)
+        output_dir: Directory to save debug images
+        
+    Returns:
+        (player_x, player_y), confidence or None, 0.0
+    """
     print("\n" + "="*70)
-    print("STEP 8: Match with Static Map")
+    print("STEP 9: Match with Static Map (ECC Multi-Scale)")
     print("="*70)
     
     # Load static map
@@ -552,93 +714,187 @@ def match_with_static_map(minimap_lines, zone_name, image_shape, output_dir):
         print(f"[!] No static map found for zone: {zone_name}")
         return None, 0.0
     
-    # Read the image
+    # Read static map
     static_map = cv2.imread(str(static_map_path))
     if static_map is None:
         print(f"[!] Failed to load static map: {static_map_path}")
         return None, 0.0
     
     save_debug_image(static_map, "12_static_map_reference", output_dir)
+    print(f"OK Loaded static map: {static_map.shape}")
     
-    # Process static map with same pipeline (simplified)
+    # Convert static map to edges
     static_gray = cv2.cvtColor(static_map, cv2.COLOR_BGR2GRAY)
-    
-    # Apply edge detection
     static_edges = cv2.Canny(static_gray, 50, 150)
     save_debug_image(static_edges, "13_static_edges", output_dir)
+    print(f"OK Extracted edges from static map: {static_edges.shape}")
+    print(f"   Static edges - Non-zero: {np.count_nonzero(static_edges)}")
     
-    # Detect lines in static map
-    static_lines = cv2.HoughLinesP(
-        static_edges,
-        rho=1,
-        theta=np.pi/180,
-        threshold=50,
-        minLineLength=30,
-        maxLineGap=20
+    # Prepare edges for ECC (normalize, smooth)
+    print("\n   Preparing images for ECC alignment...")
+    print(f"   Input adaptive_img: shape={adaptive_img.shape}, min={adaptive_img.min()}, max={adaptive_img.max()}, non-zero={np.count_nonzero(adaptive_img)}")
+    
+    minimap_edges = cv2.Canny(adaptive_img, 50, 150)
+    save_debug_image(minimap_edges, "13_minimap_canny_edges", output_dir)
+    print(f"   Minimap Canny edges: {minimap_edges.shape}, non-zero={np.count_nonzero(minimap_edges)}")
+    
+    query_ecc = prepare_edges_for_ecc(minimap_edges, blur_kernel=5)
+    ref_ecc = prepare_edges_for_ecc(static_edges, blur_kernel=5)
+    
+    print(f"   Query ECC shape: {query_ecc.shape}, Reference ECC shape: {ref_ecc.shape}")
+    
+    # CRITICAL: Resize query to match reference size (ECC needs compatible dimensions)
+    if query_ecc.shape != ref_ecc.shape:
+        print(f"   Resizing query from {query_ecc.shape} to {ref_ecc.shape}")
+        query_ecc = cv2.resize(query_ecc, (ref_ecc.shape[1], ref_ecc.shape[0]))
+    
+    # Save preprocessed images to verify content
+    query_vis = (query_ecc * 255).astype(np.uint8)
+    ref_vis = (ref_ecc * 255).astype(np.uint8)
+    save_debug_image(query_vis, "13a_minimap_edges_normalized", output_dir)
+    save_debug_image(ref_vis, "13b_static_edges_normalized", output_dir)
+    print(f"   Minimap edges - Min: {query_ecc.min():.3f}, Max: {query_ecc.max():.3f}, Non-zero: {np.count_nonzero(query_ecc > 0)}")
+    print(f"   Static edges - Min: {ref_ecc.min():.3f}, Max: {ref_ecc.max():.3f}, Non-zero: {np.count_nonzero(ref_ecc > 0)}")
+    
+    # Determine motion model - start with AFFINE (more stable than HOMOGRAPHY)
+    motion_type = 'HOMOGRAPHY'  # Try homography first for better accuracy, fallback to affine if it fails
+    print(f"   Using {motion_type} motion model")
+    
+    # Perform multi-scale ECC alignment
+    warp_matrix, cc_score = align_with_ecc(query_ecc, ref_ecc, motion_type, output_dir)
+    
+    print(f"\nOK ECC alignment complete (score: {cc_score:.4f})")
+    
+    # Debug: print transformation matrix
+    print(f"\n   Transformation matrix ({motion_type}):")
+    print(f"   {warp_matrix}")
+    
+    # Check if warp_matrix is identity (no transformation found)
+    if motion_type == 'HOMOGRAPHY':
+        identity = np.eye(3, dtype=np.float32)
+        if np.allclose(warp_matrix, identity):
+            print("   [!] WARNING: Warp matrix is identity (no transformation found)")
+    
+    # Project player position (center of adaptive_img) to static map
+    h_orig, w_orig = adaptive_img.shape[0], adaptive_img.shape[1]
+    h_resized, w_resized = query_ecc.shape[0], query_ecc.shape[1]
+    
+    # Player center in ORIGINAL image coordinates
+    player_x_orig = w_orig / 2
+    player_y_orig = h_orig / 2
+    
+    # CRITICAL: Scale player position to RESIZED image coordinates (what ECC was trained on)
+    player_x_resized = player_x_orig * w_resized / w_orig
+    player_y_resized = player_y_orig * h_resized / h_orig
+    
+    player_center = np.array([player_x_resized, player_y_resized, 1], dtype=np.float32)
+    
+    print(f"   Original minimap shape: {adaptive_img.shape}")
+    print(f"   Player position in original coords: ({player_x_orig:.1f}, {player_y_orig:.1f})")
+    print(f"   Resized for ECC to: ({query_ecc.shape[1]}, {query_ecc.shape[0]})")
+    print(f"   Player position in resized coords: ({player_x_resized:.1f}, {player_y_resized:.1f})")
+    print(f"   Static map size: {static_edges.shape}")
+    
+    # Apply transformation
+    if motion_type == 'AFFINE':
+        projected = warp_matrix @ player_center
+        player_x = int(projected[0])
+        player_y = int(projected[1])
+    else:  # HOMOGRAPHY
+        projected = warp_matrix @ player_center
+        player_x = int(projected[0] / (projected[2] + 1e-6))
+        player_y = int(projected[1] / (projected[2] + 1e-6))
+    
+    print(f"   Projected on static map: ({player_x}, {player_y})")
+    print(f"   ECC score (confidence): {cc_score:.4f}")
+    
+    # Visualize: warp minimap edges directly (debug)
+    print("\n   Warping minimap edges to reference space...")
+    minimap_edges_resized = cv2.resize(minimap_edges, (ref_ecc.shape[1], ref_ecc.shape[0]))
+    
+    if motion_type == 'AFFINE':
+        warped = cv2.warpAffine(
+            minimap_edges_resized,
+            warp_matrix,
+            (static_edges.shape[1], static_edges.shape[0]),
+            borderMode=cv2.BORDER_CONSTANT,
+            borderValue=0
+        )
+    else:
+        warped = cv2.warpPerspective(
+            minimap_edges_resized,
+            warp_matrix,
+            (static_edges.shape[1], static_edges.shape[0]),
+            borderMode=cv2.BORDER_CONSTANT,
+            borderValue=0
+        )
+    
+    print(f"   Warped shape: {warped.shape}, min: {warped.min()}, max: {warped.max()}, non-zero: {np.count_nonzero(warped)}")
+    
+    # Save warped as-is (may be mostly black if transform is large)
+    save_debug_image(warped, "14_warped_minimap_edges", output_dir)
+    
+    # Also warp the original adaptive_img for comparison
+    adaptive_resized = cv2.resize(adaptive_img, (ref_ecc.shape[1], ref_ecc.shape[0]))
+    if motion_type == 'AFFINE':
+        warped_adaptive = cv2.warpAffine(
+            adaptive_resized,
+            warp_matrix,
+            (static_edges.shape[1], static_edges.shape[0]),
+            borderMode=cv2.BORDER_CONSTANT,
+            borderValue=0
+        )
+    else:
+        warped_adaptive = cv2.warpPerspective(
+            adaptive_resized,
+            warp_matrix,
+            (static_edges.shape[1], static_edges.shape[0]),
+            borderMode=cv2.BORDER_CONSTANT,
+            borderValue=0
+        )
+    save_debug_image(warped_adaptive, "14a_warped_adaptive_img", output_dir)
+    print(f"   Warped adaptive_img - non-zero: {np.count_nonzero(warped_adaptive)}")
+    
+    # Overlay: blend warped with static map
+    warped_vis = warped.astype(np.uint8)
+    overlay = static_map.copy().astype(float)
+    
+    # Find non-zero pixels in warped
+    mask = warped_vis > 0
+    if np.any(mask):
+        overlay[mask] = [0, 255, 0]  # Green where warped query exists
+        print(f"   [+] Found {np.count_nonzero(mask)} overlapping pixels")
+    else:
+        print("   [!] Warped image is completely black - no visible overlap")
+    
+    overlay = overlay.astype(np.uint8)
+    save_debug_image(overlay, "14b_alignment_overlay", output_dir)
+    
+    # Visualize result on static map
+    result_vis = static_map.copy()
+    
+    # Draw player position
+    cv2.circle(result_vis, (player_x, player_y), 15, (0, 0, 255), -1)
+    cv2.circle(result_vis, (player_x, player_y), 15, (255, 255, 255), 2)
+    
+    # Add crosshair
+    cv2.line(result_vis, (player_x - 30, player_y), (player_x + 30, player_y), (0, 0, 255), 2)
+    cv2.line(result_vis, (player_x, player_y - 30), (player_x, player_y + 30), (0, 0, 255), 2)
+    
+    # Add confidence text
+    cv2.putText(
+        result_vis,
+        f"ECC: {cc_score:.3f}",
+        (10, 30),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1.0,
+        (0, 255, 0),
+        2
     )
     
-    if static_lines is None:
-        print("[!] No lines detected in static map")
-        return None, 0.0
+    save_debug_image(result_vis, "15_localization_result", output_dir)
     
-    print(f"OK Detected {len(static_lines)} lines in static map")
-    
-    # Create line images for template matching
-    minimap_line_img = create_line_image(minimap_lines, image_shape)
-    save_debug_image(minimap_line_img, "14_minimap_line_structure", output_dir)
-    
-    static_line_img = create_line_image(static_lines, static_map.shape)
-    save_debug_image(static_line_img, "15_static_line_structure", output_dir)
-    
-    # Multi-scale template matching
-    print("\n   Attempting multi-scale matching...")
-    scales = [0.5, 0.75, 1.0, 1.25, 1.5]
-    best_match = None
-    best_confidence = 0.0
-    
-    for scale in scales:
-        if scale != 1.0:
-            scaled = cv2.resize(minimap_line_img, None, fx=scale, fy=scale)
-        else:
-            scaled = minimap_line_img
-        
-        if scaled.shape[0] > static_line_img.shape[0] or scaled.shape[1] > static_line_img.shape[1]:
-            continue
-        
-        result = cv2.matchTemplate(static_line_img, scaled, cv2.TM_CCOEFF_NORMED)
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-        
-        print(f"      Scale {scale:.2f}: confidence={max_val:.3f}")
-        
-        if max_val > best_confidence:
-            best_confidence = max_val
-            best_match = (max_loc, scale)
-    
-    # Visualize result
-    if best_match and best_confidence > 0.3:
-        pos, scale = best_match
-        h, w = int(image_shape[0] * scale), int(image_shape[1] * scale)
-        
-        result_vis = static_map.copy()
-        cv2.rectangle(result_vis, pos, (pos[0] + w, pos[1] + h), (0, 255, 0), 3)
-        
-        # Player position (center of matched region)
-        player_x = pos[0] + w // 2
-        player_y = pos[1] + h // 2
-        cv2.circle(result_vis, (player_x, player_y), 10, (0, 0, 255), -1)
-        
-        save_debug_image(result_vis, "16_localization_result", output_dir)
-        
-        print(f"\nOK LOCALIZATION SUCCESS")
-        print(f"   Position: ({player_x}, {player_y})")
-        print(f"   Confidence: {best_confidence:.3f}")
-        print(f"   Scale: {scale:.2f}")
-        
-        return (player_x, player_y), best_confidence
-    else:
-        print(f"\n[X] LOCALIZATION FAILED")
-        print(f"   Best confidence: {best_confidence:.3f} (threshold: 0.3)")
-        return None, best_confidence
+    return (player_x, player_y), cc_score
 
 
 # ============================================================================
@@ -721,14 +977,26 @@ def main():
         
         # Apply isometric-oriented processing on full diff image
         oriented = apply_oriented_filtering(diff_image, output_dir)
-        adaptive = apply_adaptive_threshold(oriented, output_dir)
-        closed = apply_oriented_closing(adaptive, output_dir)
-        lines, _ = detect_lines_hough(closed, output_dir)
+        adaptive, adaptive_closed = apply_adaptive_threshold(oriented, output_dir)
+        closed = apply_oriented_closing(adaptive_closed, output_dir)
+        # lines, _ = detect_lines_hough(closed, output_dir)
+        lines, _ = detect_lines_hough(adaptive_closed, output_dir)
         merged_lines = fuse_and_clean_lines(lines, diff_image.shape, output_dir)
         
+        # Draw red dot at center of diff_image (player position in screenshot)
+        # print("\n" + "="*70)
+        # print("STEP 8: Player Position Marker")
+        # print("="*70)
+        # center_h, center_w = adaptive.shape[0] // 2, adaptive.shape[1] // 2
+        # diff_with_marker = adaptive.copy()
+        # #cv2.circle(diff_with_marker, (center_w, center_h), 15, (0, 0, 255), -1)  # Red circle
+        # cv2.circle(diff_with_marker, (center_w, center_h), 15, (255, 255, 255), 2)  # White outline
+        # save_debug_image(diff_with_marker, "08_diff_with_player_marker", output_dir)
+        # print(f"OK Player marker drawn at center: ({center_w}, {center_h})")
+        
         # Match with static map
-        player_pos, confidence = match_with_static_map(
-            merged_lines,
+        player_pos, confidence = match_with_static_map_ecc(
+            adaptive_closed,
             zone_name,
             diff_image.shape,
             output_dir
