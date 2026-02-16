@@ -703,3 +703,119 @@ class UIVisionModule:
             'mana': 0,
             'rejuvenation': 0,
         }
+    
+    def localize_with_ransac(
+        self,
+        minimap_edges: np.ndarray,
+        static_map: np.ndarray,
+        max_iterations: int = 1000,
+        threshold: float = 2.0
+    ) -> Tuple[Optional[Tuple[float, float]], float]:
+        """
+        Localize player position using RANSAC-based feature matching.
+        
+        Uses SIFT features and RANSAC to robustly match minimap to static map,
+        handling outliers and partial occlusions better than ECC.
+        
+        Args:
+            minimap_edges: Extracted minimap edges (from image preprocessing)
+            static_map: Static map reference image
+            max_iterations: Maximum RANSAC iterations
+            threshold: Distance threshold for inliers
+            
+        Returns:
+            (player_position, confidence) where:
+            - player_position: (x, y) coordinates or None
+            - confidence: 0.0-1.0 confidence score
+        """
+        if minimap_edges is None or minimap_edges.size == 0:
+            return None, 0.0
+        if static_map is None or static_map.size == 0:
+            return None, 0.0
+        
+        # Ensure images are uint8
+        if minimap_edges.dtype != np.uint8:
+            minimap_edges = cv2.convertScaleAbs(minimap_edges)
+        if static_map.dtype != np.uint8:
+            static_map = cv2.convertScaleAbs(static_map)
+        
+        # Initialize SIFT detector
+        try:
+            sift = cv2.SIFT_create()
+        except AttributeError:
+            # Fallback for older OpenCV versions
+            return None, 0.0
+        
+        # Detect keypoints and compute descriptors
+        kp1, des1 = sift.detectAndCompute(minimap_edges, None)
+        kp2, des2 = sift.detectAndCompute(static_map, None)
+        
+        if des1 is None or des2 is None or len(kp1) < 4 or len(kp2) < 4:
+            if self.debug:
+                print("[RANSAC] Insufficient features for matching")
+            return None, 0.0
+        
+        # Match features using FLANN
+        FLANN_INDEX_KDTREE = 1
+        index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+        search_params = dict(checks=50)
+        flann = cv2.FlannBasedMatcher(index_params, search_params)
+        
+        # Use knnMatch to get best and second-best matches
+        matches = flann.knnMatch(des1, des2, k=2)
+        
+        # Apply Lowe's ratio test to filter good matches
+        good_matches = []
+        for match_pair in matches:
+            if len(match_pair) == 2:
+                m, n = match_pair
+                if m.distance < 0.7 * n.distance:
+                    good_matches.append(m)
+        
+        if len(good_matches) < 4:
+            if self.debug:
+                print(f"[RANSAC] Too few good matches: {len(good_matches)}")
+            return None, 0.0
+        
+        # Extract matching points
+        src_pts = np.float32([kp1[m.queryIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+        dst_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+        
+        # Use RANSAC to find homography
+        homography, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+        
+        if homography is None:
+            if self.debug:
+                print("[RANSAC] Could not compute homography")
+            return None, 0.0
+        
+        # Count inliers
+        inliers = np.sum(mask)
+        total_matches = len(good_matches)
+        inlier_ratio = inliers / total_matches if total_matches > 0 else 0.0
+        
+        if self.debug:
+            print(f"[RANSAC] Inliers: {inliers}/{total_matches} ({inlier_ratio:.2%})")
+        
+        # If too few inliers, confidence is low
+        if inlier_ratio < 0.3:
+            confidence = inlier_ratio
+        else:
+            confidence = min(1.0, inlier_ratio * 0.9)
+        
+        # Estimate player position at minimap center
+        minimap_center = np.array([minimap_edges.shape[1] / 2, minimap_edges.shape[0] / 2], dtype=np.float32)
+        minimap_center = minimap_center.reshape(1, 1, 2)
+        
+        # Transform to static map space
+        transformed = cv2.perspectiveTransform(minimap_center, homography)
+        
+        if transformed is None or transformed.size == 0:
+            return None, 0.0
+        
+        player_pos = tuple(transformed[0, 0].astype(np.float32))
+        
+        if self.debug:
+            print(f"[RANSAC] Player position: {player_pos}, confidence: {confidence:.3f}")
+        
+        return player_pos, confidence

@@ -15,6 +15,14 @@ from .frontier_navigator import FrontierNavigator, NavigationAction, NavigationS
 from .nav_visualization import NavigationOverlay, draw_pose_arrow, draw_path_on_frame
 from .static_map_localizer import StaticMapLocalizer, load_zone_static_map, LocalizationResult
 
+# ECC-based advanced localization
+from .image_preprocessing import OrientedFilterBank, OrientedMorphology, AdaptiveThresholdProcessor
+from .minimap_edge_extractor import MinimapEdgeExtractor
+from .ecc_localizer import ECCAligner, StaticMapMatcher
+from .static_map_localizer_base import StaticMapLocalizerBase
+from .ecc_static_localizer import ECCStaticMapLocalizer
+from .ransac_static_localizer import RANSACStaticMapLocalizer
+
 __all__ = [
     'WorldMapManager',
     'ZoneMap',
@@ -46,4 +54,14 @@ __all__ = [
     'StaticMapLocalizer',
     'load_zone_static_map',
     'LocalizationResult',
+    # ECC-based advanced localization
+    'OrientedFilterBank',
+    'OrientedMorphology',
+    'AdaptiveThresholdProcessor',
+    'MinimapEdgeExtractor',
+    'ECCAligner',
+    'StaticMapMatcher',
+    'StaticMapLocalizerBase',
+    'ECCStaticMapLocalizer',
+    'RANSACStaticMapLocalizer',
 ]
