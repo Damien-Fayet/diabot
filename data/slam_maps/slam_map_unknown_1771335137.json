@@ -1,0 +1,22 @@
+{
+  "level_0": [
+    {
+      "type": "npc",
+      "pos": [
+        2048,
+        2048
+      ],
+      "confidence": 0.9,
+      "metadata": {}
+    },
+    {
+      "type": "waypoint",
+      "pos": [
+        2068,
+        2028
+      ],
+      "confidence": 0.95,
+      "metadata": {}
+    }
+  ]
+}

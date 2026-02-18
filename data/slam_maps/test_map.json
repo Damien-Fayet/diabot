@@ -1,0 +1,24 @@
+{
+  "level_0": [
+    {
+      "type": "npc",
+      "pos": [
+        1024,
+        1020
+      ],
+      "confidence": 0.9,
+      "metadata": {
+        "name": "Test NPC"
+      }
+    },
+    {
+      "type": "exit",
+      "pos": [
+        1074,
+        1040
+      ],
+      "confidence": 0.85,
+      "metadata": {}
+    }
+  ]
+}

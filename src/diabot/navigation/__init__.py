@@ -23,6 +23,10 @@ from .static_map_localizer_base import StaticMapLocalizerBase
 from .ecc_static_localizer import ECCStaticMapLocalizer
 from .ransac_static_localizer import RANSACStaticMapLocalizer
 
+# SLAM system (visual odometry, no game coordinates)
+from .minimap_slam import MinimapSLAM, OccupancyCell, POI as SLAM_POI, MapSignature, Level
+from .slam_visualizer import SLAMVisualizer
+
 __all__ = [
     'WorldMapManager',
     'ZoneMap',
@@ -64,4 +68,11 @@ __all__ = [
     'StaticMapLocalizerBase',
     'ECCStaticMapLocalizer',
     'RANSACStaticMapLocalizer',
+    # SLAM system
+    'MinimapSLAM',
+    'OccupancyCell',
+    'SLAM_POI',
+    'MapSignature',
+    'Level',
+    'SLAMVisualizer',
 ]

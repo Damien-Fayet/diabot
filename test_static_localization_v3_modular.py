@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 """
-Test script for static map localization - Using modular ECC system.
+Test script for static map localization - Using ECC with Phase Correlation.
 
-Refactored to use new production modules:
-- image_preprocessing: Filters and preprocessing
-- minimap_edge_extractor: Minimap edge extraction
-- ecc_localizer: ECC alignment engine
-- ecc_static_localizer: High-level unified interface
+Uses modular ECC system with Phase Correlation (FFT) on processed minimap images
+(after Gabor filters, before Canny) for robust initialization before edge-based alignment.
+
+Key improvements:
+- Phase correlation applied to PROCESSED minimap (Gabor-filtered, no Canny)
+- More accurate initial offset detection on structural features
+- ECC alignment on Canny edges for fine-tuning
 
 Usage:
-  python test_static_localization_v3.py           # Live capture mode
-  python test_static_localization_v3.py --static   # Use static images from inputs/
+  python test_static_localization_v3_modular.py           # Live capture mode
+  python test_static_localization_v3_modular.py --static   # Use static images from inputs/
 """
 import sys
 from pathlib import Path
@@ -27,7 +29,6 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 from diabot.core.implementations import WindowsScreenCapture
 from diabot.navigation import (
     ECCStaticMapLocalizer,
-    RANSACStaticMapLocalizer,
     load_zone_static_map,
 )
 from diabot.vision.ui_vision import UIVisionModule
@@ -169,7 +170,13 @@ def localize_with_ecc(
     output_dir
 ):
     """
-    Localize player using modular ECC system with detailed visualizations.
+    Localize player using ECC alignment with Phase Correlation initialization.
+    
+    Pipeline:
+    1. Extract edges (both Canny and non-Canny versions)
+    0. Phase Correlation (FFT) on PROCESSED minimap (before Canny) for robust initial offset
+    2. Rescale edges to match static map
+    3. Multi-scale ECC alignment for fine-tuning
     
     Args:
         frame_with_minimap: Frame with minimap visible
@@ -181,7 +188,7 @@ def localize_with_ecc(
         (player_position, confidence) or (None, 0.0)
     """
     print("\n" + "="*70)
-    print("LOCALIZATION: ECC Method (with upscaling)")
+    print("LOCALIZATION: ECC with Phase Correlation")
     print("="*70)
     
     # Create localizer
@@ -205,25 +212,28 @@ def localize_with_ecc(
     print(f"[+] Loaded static map from: {map_path}")
     
     # ========================================================================
-    # STEP 1: Extract edges
+    # STEP 1: Extract edges (both versions: non-Canny and Canny)
     # ========================================================================
     print("\n[STEP 1] Extracting edges...")
     
-    # Get minimap edges
-    minimap_edges_canny = localizer.extract_minimap_edges_canny(
+    # Get minimap edges - both versions
+    minimap_edges_no_canny, minimap_edges_canny = localizer.extract_minimap_edges_canny(
         frame_with_minimap,
         frame_without_minimap,
         use_oriented_filter=True,
         canny_low=50,
-        canny_high=150
+        canny_high=150,
+        return_both=True
     )
     
     if minimap_edges_canny is None:
         print("[!] Failed to extract minimap edges")
         return None, 0.0
     
-    save_debug_image(minimap_edges_canny, "ecc_01_minimap_edges_canny", output_dir)
-    print(f"   Minimap edges: {minimap_edges_canny.shape[1]}×{minimap_edges_canny.shape[0]}")
+    save_debug_image(minimap_edges_no_canny, "ecc_01a_minimap_edges_no_canny", output_dir)
+    save_debug_image(minimap_edges_canny, "ecc_01b_minimap_edges_canny", output_dir)
+    print(f"   Minimap edges (no Canny): {minimap_edges_no_canny.shape[1]}×{minimap_edges_no_canny.shape[0]}")
+    print(f"   Minimap edges (Canny): {minimap_edges_canny.shape[1]}×{minimap_edges_canny.shape[0]}")
     
     # Get static map Canny edges
     static_map_edges_canny_original = localizer.extract_static_map_edges_canny(
@@ -235,44 +245,286 @@ def localize_with_ecc(
     print(f"   Static edges (original): {static_map_edges_canny_original.shape[1]}×{static_map_edges_canny_original.shape[0]}")
     
     # ========================================================================
-    # STEP 2: Upscale static map to match minimap size
+    # STEP 0: Phase Correlation on processed minimap (BEFORE Canny)
     # ========================================================================
-    print("\n[STEP 2] Upscaling static map to match minimap...")
+    print("\n[STEP 0] Phase Correlation (FFT) on processed minimap (before Canny)...")
+    print("   Working on PROCESSED minimap (Gabor filters) BEFORE Canny for better accuracy")
     
-    target_shape = minimap_edges_canny.shape
-    static_map_edges_upscaled = cv2.resize(
-        static_map_edges_canny_original,
-        (target_shape[1], target_shape[0]),
+    # Initialize phase correlation results
+    phase_offset_x_raw = 0.0
+    phase_offset_y_raw = 0.0
+    response_raw = 0.0
+    use_phase_init = False
+    
+    if minimap_edges_no_canny is not None and minimap_edges_no_canny.size > 0:
+        
+        # Get static map in grayscale
+        if localizer.static_map is not None:
+            if len(localizer.static_map.shape) == 3:
+                static_gray = cv2.cvtColor(localizer.static_map, cv2.COLOR_BGR2GRAY)
+            else:
+                static_gray = localizer.static_map
+            
+            save_debug_image(minimap_edges_no_canny, "ecc_00a_minimap_processed_no_canny", output_dir)
+            save_debug_image(static_gray, "ecc_00b_static_original_gray", output_dir)
+            
+            print(f"   Minimap processed (no Canny): {minimap_edges_no_canny.shape[1]}×{minimap_edges_no_canny.shape[0]}")
+            print(f"   Static original: {static_gray.shape[1]}×{static_gray.shape[0]}")
+            
+            # Apply Hann window to reduce edge effects in FFT
+            hann_window = cv2.createHanningWindow(
+                (minimap_edges_no_canny.shape[1], minimap_edges_no_canny.shape[0]),
+                cv2.CV_32F
+            )
+            
+            minimap_float = minimap_edges_no_canny.astype(np.float32)
+            static_float = static_gray.astype(np.float32)
+            
+            minimap_windowed = minimap_float * hann_window
+            static_windowed = static_float * hann_window
+            
+            # Phase correlation using FFT
+            try:
+                shift, response_raw = cv2.phaseCorrelate(minimap_windowed, static_windowed)
+                
+                phase_offset_x_raw = shift[0]
+                phase_offset_y_raw = shift[1]
+                
+                print(f"\n   📊 Phase Correlation (on PROCESSED minimap - no Canny):")
+                print(f"      Translation detected: X={phase_offset_x_raw:+.2f} px, Y={phase_offset_y_raw:+.2f} px")
+                print(f"      Response (confidence): {response_raw:.4f}")
+                
+                # Visualize the phase correlation result
+                viz_phase = cv2.cvtColor(static_gray, cv2.COLOR_GRAY2BGR)
+                
+                # Draw the shifted minimap position
+                h, w = minimap_edges_no_canny.shape
+                center_x = w // 2
+                center_y = h // 2
+                
+                # New position after phase correlation shift
+                new_center_x = int(center_x - phase_offset_x_raw)
+                new_center_y = int(center_y - phase_offset_y_raw)
+                
+                # Draw bounding box at detected position
+                top_left = (new_center_x - w//2, new_center_y - h//2)
+                bottom_right = (new_center_x + w//2, new_center_y + h//2)
+                
+                # Ensure coordinates are in bounds
+                if (0 <= top_left[0] < viz_phase.shape[1] and 
+                    0 <= top_left[1] < viz_phase.shape[0] and
+                    0 <= bottom_right[0] < viz_phase.shape[1] and 
+                    0 <= bottom_right[1] < viz_phase.shape[0]):
+                    
+                    cv2.rectangle(viz_phase, top_left, bottom_right, (255, 0, 255), 2)
+                    cv2.circle(viz_phase, (new_center_x, new_center_y), 5, (255, 0, 255), -1)
+                    
+                    cv2.putText(viz_phase, f"Phase Correlation (Processed minimap): shift=({phase_offset_x_raw:.1f}, {phase_offset_y_raw:.1f})", 
+                               (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 255), 2)
+                    cv2.putText(viz_phase, f"Response: {response_raw:.4f}", 
+                               (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 255), 2)
+                
+                save_debug_image(viz_phase, "ecc_00d_phase_correlation_processed", output_dir)
+                
+                # Create overlay with phase-corrected alignment
+                shift_matrix = np.array([
+                    [1.0, 0.0, -phase_offset_x_raw],
+                    [0.0, 1.0, -phase_offset_y_raw]
+                ], dtype=np.float32)
+                
+                minimap_shifted = cv2.warpAffine(
+                    minimap_edges_no_canny,
+                    shift_matrix,
+                    (static_gray.shape[1], static_gray.shape[0])
+                )
+                
+                # Create colored overlay
+                overlay_phase = np.zeros((static_gray.shape[0], static_gray.shape[1], 3), dtype=np.uint8)
+                overlay_phase[:, :, 1] = minimap_shifted  # Green = phase-corrected minimap
+                overlay_phase[:, :, 2] = static_gray  # Red = static
+                
+                # Calculate overlap metrics
+                minimap_pixels = np.count_nonzero(minimap_shifted)
+                static_pixels = np.count_nonzero(static_gray)
+                overlap_pixels = np.count_nonzero(cv2.bitwise_and(minimap_shifted, static_gray))
+                overlap_ratio_phase = (overlap_pixels / max(minimap_pixels, static_pixels)) * 100 if max(minimap_pixels, static_pixels) > 0 else 0
+                
+                cv2.putText(overlay_phase, f"After Phase Correlation (Processed): {overlap_ratio_phase:.1f}% overlap", 
+                           (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+                cv2.putText(overlay_phase, f"Response: {response_raw:.4f}", 
+                           (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 1)
+                
+                save_debug_image(overlay_phase, "ecc_00e_overlay_after_phase_corr_processed", output_dir)
+                
+                print(f"      Overlap after phase correction: {overlap_ratio_phase:.2f}%")
+                
+                # Decide if we use this initialization
+                if response_raw > 0.1:
+                    print(f"      ✅ Phase correlation result seems reliable (response > 0.1)")
+                    print(f"      💡 Will use this offset to initialize ECC")
+                    use_phase_init = True
+                else:
+                    print(f"      ⚠️  Phase correlation low confidence (response={response_raw:.4f})")
+                    print(f"      Will use identity matrix for ECC initialization")
+                    use_phase_init = False
+                    
+            except cv2.error as e:
+                print(f"      ❌ Phase correlation failed: {e}")
+                print(f"      Will use identity matrix for ECC initialization")
+                use_phase_init = False
+        else:
+            print("   [!] Static map not loaded, skipping phase correlation")
+    else:
+        print("   [!] Could not extract processed minimap (no Canny), skipping phase correlation")
+    
+    print(f"   ✅ Phase correlation on processed minimap completed")
+    
+    # ========================================================================
+    # STEP 2: Rescale minimap to match static map size
+    # ========================================================================
+    print("\n[STEP 2] Rescaling minimap to match static map size...")
+    
+    target_size = static_map_edges_canny_original.shape  # Utiliser taille de la carte statique
+    minimap_edges_rescaled = cv2.resize(
+        minimap_edges_canny, 
+        (target_size[1], target_size[0]),
         interpolation=cv2.INTER_LINEAR
     )
     
-    save_debug_image(static_map_edges_upscaled, "ecc_03_static_map_edges_upscaled", output_dir)
-    print(f"   Static edges (upscaled): {static_map_edges_upscaled.shape[1]}×{static_map_edges_upscaled.shape[0]}")
+    # Maintenant minimap et static ont la MÊME taille → ECC devrait mieux marcher
+    save_debug_image(minimap_edges_rescaled, "ecc_03_minimap_edges_rescaled", output_dir)
+    print(f"   Minimap edges (rescaled): {minimap_edges_rescaled.shape[1]}×{minimap_edges_rescaled.shape[0]}")
     print(f"   ✅ Sizes now match!")
     
     # Comparison visualization
-    viz_height = target_shape[0]
+    viz_height = target_size[0]
     minimap_rgb = cv2.cvtColor(minimap_edges_canny, cv2.COLOR_GRAY2BGR)
-    static_rgb = cv2.cvtColor(static_map_edges_upscaled, cv2.COLOR_GRAY2BGR)
+    static_rgb = cv2.cvtColor(static_map_edges_canny_original, cv2.COLOR_GRAY2BGR)
     
     composite = np.ones((viz_height, minimap_rgb.shape[1] + static_rgb.shape[1] + 20, 3), dtype=np.uint8) * 255
     composite[0:minimap_rgb.shape[0], 0:minimap_rgb.shape[1]] = minimap_rgb
     composite[0:static_rgb.shape[0], minimap_rgb.shape[1]+20:] = static_rgb
     
-    cv2.putText(composite, f"Minimap: {minimap_edges_canny.shape[1]}×{minimap_edges_canny.shape[0]}", 
+    cv2.putText(composite, f"Minimap (original): {minimap_edges_canny.shape[1]}×{minimap_edges_canny.shape[0]}", 
                 (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    cv2.putText(composite, f"Static (upscaled): {static_map_edges_upscaled.shape[1]}×{static_map_edges_upscaled.shape[0]}", 
+    cv2.putText(composite, f"Static map: {static_map_edges_canny_original.shape[1]}×{static_map_edges_canny_original.shape[0]}", 
                 (minimap_rgb.shape[1] + 30, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
     
     save_debug_image(composite, "ecc_04_comparison_same_size", output_dir)
+    
+    # ========================================================================
+    # STEP 2b: SUPERPOSITION BEFORE ALIGNMENT (diagnostic)
+    # ========================================================================
+    print("\n[STEP 2b] Creating overlay BEFORE alignment (diagnostic)...")
+    
+    # Convert to RGB for overlay
+    minimap_rescaled_rgb = cv2.cvtColor(minimap_edges_rescaled, cv2.COLOR_GRAY2BGR)
+    static_rgb = cv2.cvtColor(static_map_edges_canny_original, cv2.COLOR_GRAY2BGR)
+    
+    # Create colored overlay: minimap in GREEN, static in RED
+    overlay_before = np.zeros_like(static_rgb)
+    overlay_before[:, :, 0] = static_map_edges_canny_original  # Blue channel = 0
+    overlay_before[:, :, 1] = minimap_edges_rescaled  # Green channel = minimap
+    overlay_before[:, :, 2] = static_map_edges_canny_original  # Red channel = static
+    
+    # Where both overlap = should be yellow (G+R), green = minimap only, red = static only
+    save_debug_image(overlay_before, "ecc_04b_overlay_BEFORE_alignment", output_dir)
+    
+    # Also create a blend overlay (50/50)
+    overlay_blend_before = cv2.addWeighted(minimap_rescaled_rgb, 0.5, static_rgb, 0.5, 0)
+    cv2.putText(overlay_blend_before, "BEFORE alignment - 50% blend", (10, 25),
+               cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+    cv2.putText(overlay_blend_before, "Green=Minimap, Red=Static, Yellow=Match", (10, 50),
+               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+    save_debug_image(overlay_blend_before, "ecc_04c_blend_BEFORE_alignment", output_dir)
+    
+    # ========================================================================
+    # STEP 2c: COMPUTE SIMILARITY METRICS (critical diagnostic)
+    # ========================================================================
+    print(f"\n   📊 SIMILARITY ANALYSIS (BEFORE alignment):")
+    
+    # Count non-zero pixels
+    minimap_pixels = np.count_nonzero(minimap_edges_rescaled)
+    static_pixels = np.count_nonzero(static_map_edges_canny_original)
+    overlap_pixels = np.count_nonzero(
+        cv2.bitwise_and(minimap_edges_rescaled, static_map_edges_canny_original)
+    )
+    
+    total_size = minimap_edges_rescaled.size
+    minimap_density = (minimap_pixels / total_size) * 100
+    static_density = (static_pixels / total_size) * 100
+    overlap_ratio = (overlap_pixels / max(minimap_pixels, static_pixels)) * 100 if max(minimap_pixels, static_pixels) > 0 else 0
+    
+    print(f"      Minimap edge pixels: {minimap_pixels:,} ({minimap_density:.2f}% density)")
+    print(f"      Static edge pixels: {static_pixels:,} ({static_density:.2f}% density)")
+    print(f"      Overlapping pixels: {overlap_pixels:,} ({overlap_ratio:.2f}% overlap)")
+    
+    if overlap_ratio < 5:
+        print(f"      ❌ CRITICAL: < 5% overlap - images don't match at all!")
+        print(f"         Possible causes:")
+        print(f"         - Wrong zone (minimap from different area)")
+        print(f"         - Scale mismatch (despite rescaling)")
+        print(f"         - Rotation difference")
+        print(f"         - Very different content")
+    elif overlap_ratio < 15:
+        print(f"      ⚠️  WARNING: {overlap_ratio:.1f}% overlap - poor initial alignment")
+    else:
+        print(f"      ✅ OK: {overlap_ratio:.1f}% overlap - reasonable starting point")
+    
+    # Try template matching to find best initial offset
+    print(f"\n   🔍 SEARCHING for best initial alignment with template matching...")
+    
+    # Initialize variables
+    template_offset_x = 0
+    template_offset_y = 0
+    max_val = 0.0
+    
+    try:
+        result = cv2.matchTemplate(
+            static_map_edges_canny_original.astype(np.float32),
+            minimap_edges_rescaled.astype(np.float32),
+            cv2.TM_CCORR_NORMED
+        )
+        _, max_val, _, max_loc = cv2.minMaxLoc(result)
+        
+        print(f"      Best match score: {max_val:.4f}")
+        print(f"      Best match position: ({max_loc[0]}, {max_loc[1]})")
+        
+        # Calculate offset from center (store for later use in ECC initialization)
+        center_x = static_map_edges_canny_original.shape[1] // 2
+        center_y = static_map_edges_canny_original.shape[0] // 2
+        template_offset_x = max_loc[0] - (center_x - minimap_edges_rescaled.shape[1] // 2)
+        template_offset_y = max_loc[1] - (center_y - minimap_edges_rescaled.shape[0] // 2)
+        
+        print(f"      Suggested offset from center: X={template_offset_x:+d} px, Y={template_offset_y:+d} px")
+        
+        if abs(template_offset_x) > 50 or abs(template_offset_y) > 50:
+            print(f"      ⚠️  Large offset needed ({abs(template_offset_x)}×{abs(template_offset_y)}) - ECC may struggle")
+            print(f"      💡 Will initialize ECC with this offset instead of identity matrix")
+        
+        # Create visualization with template matching result
+        viz_match = static_rgb.copy()
+        cv2.rectangle(viz_match, max_loc, 
+                     (max_loc[0] + minimap_edges_rescaled.shape[1], 
+                      max_loc[1] + minimap_edges_rescaled.shape[0]),
+                     (0, 255, 0), 2)
+        cv2.putText(viz_match, f"Best match: score={max_val:.3f}", (10, 25),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+        save_debug_image(viz_match, "ecc_04d_template_matching_result", output_dir)
+        
+    except Exception as e:
+        print(f"      ❌ Template matching failed: {e}")
+        print(f"      Using center position (no offset)")
+    
+    print(f"   ✅ Template matching completed")
     
     # ========================================================================
     # STEP 3: Prepare images for ECC (normalize, blur)
     # ========================================================================
     print("\n[STEP 3] Preparing images for ECC alignment...")
     
-    query_ecc = localizer.matcher.aligner.prepare_for_ecc(minimap_edges_canny, blur_kernel=5)
-    ref_ecc = localizer.matcher.aligner.prepare_for_ecc(static_map_edges_upscaled, blur_kernel=5)
+    query_ecc = localizer.matcher.aligner.prepare_for_ecc(minimap_edges_rescaled, blur_kernel=5)
+    ref_ecc = localizer.matcher.aligner.prepare_for_ecc(static_map_edges_canny_original, blur_kernel=5)
     
     # Visualize prepared images
     query_viz = (query_ecc * 255).astype(np.uint8)
@@ -341,9 +593,41 @@ def localize_with_ecc(
     # ========================================================================
     print("\n[STEP 5] Running multi-scale ECC alignment...")
     
-    motion_type = 'HOMOGRAPHY'
-    warp_mode = cv2.MOTION_HOMOGRAPHY
-    warp_matrix = np.eye(3, 3, dtype=np.float32)
+    # Use TRANSLATION mode: only X,Y displacement (no rotation, no scale, no perspective)
+    # This is appropriate since the minimap and static map have the same size and orientation
+    motion_type = 'TRANSLATION'
+    warp_mode = cv2.MOTION_TRANSLATION
+    
+    # Choose best initialization method based on previous analysis
+    print(f"   Choosing initialization method:")
+    
+    init_method = "Identity Matrix"  # Default
+    
+    if use_phase_init and response_raw > 0.1:
+        # Phase correlation (on PROCESSED images) gave good result - use it
+        warp_matrix = np.array([
+            [1.0, 0.0, -phase_offset_x_raw],
+            [0.0, 1.0, -phase_offset_y_raw]
+        ], dtype=np.float32)
+        print(f"   ✅ Using PHASE CORRELATION initialization (from PROCESSED minimap)")
+        print(f"      Initial offset: X={-phase_offset_x_raw:+.2f}, Y={-phase_offset_y_raw:+.2f}")
+        print(f"      Response: {response_raw:.4f}")
+        init_method = "Phase Correlation (FFT on PROCESSED minimap)"
+    elif overlap_ratio < 10 and (abs(template_offset_x) < 100 and abs(template_offset_y) < 100):
+        # Poor overlap but template matching found reasonable offset
+        warp_matrix = np.array([
+            [1.0, 0.0, float(template_offset_x)],
+            [0.0, 1.0, float(template_offset_y)]
+        ], dtype=np.float32)
+        print(f"   ✅ Using TEMPLATE MATCHING initialization")
+        print(f"      Initial offset: X={template_offset_x:+d}, Y={template_offset_y:+d}")
+        init_method = "Template Matching"
+    else:
+        # Good overlap or no hint - use identity
+        warp_matrix = np.eye(2, 3, dtype=np.float32)
+        print(f"   ✅ Using IDENTITY initialization (no offset)")
+        init_method = "Identity Matrix"
+    
     max_iterations = 5000
     epsilon = 1e-6
     criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, max_iterations, epsilon)
@@ -367,9 +651,10 @@ def localize_with_ecc(
                 criteria
             )
             print(f"      ✅ ECC score: {cc_score:.4f}")
+            print(f"         Translation: X={warp_matrix[0, 2]:.2f}, Y={warp_matrix[1, 2]:.2f}")
             
-            # Warp query to reference
-            warped = cv2.warpPerspective(
+            # Warp query to reference using affine transformation
+            warped = cv2.warpAffine(
                 query_level,
                 warp_matrix,
                 (ref_level.shape[1], ref_level.shape[0])
@@ -394,12 +679,10 @@ def localize_with_ecc(
             })
             continue
         
-        # Scale warp matrix for next level
+        # Scale translation offsets for next pyramid level (double for higher resolution)
         if level < len(query_pyramid) - 1:
-            warp_matrix[0, 2] *= 2
-            warp_matrix[1, 2] *= 2
-            warp_matrix[2, 0] *= 0.5
-            warp_matrix[2, 1] *= 0.5
+            warp_matrix[0, 2] *= 2  # Scale X translation
+            warp_matrix[1, 2] *= 2  # Scale Y translation
     
     # ========================================================================
     # STEP 6: Visualize alignment at each pyramid level
@@ -444,6 +727,52 @@ def localize_with_ecc(
     print(f"   ✅ Saved {len([r for r in alignment_results if not r.get('failed', False)])} alignment visualizations")
     
     # ========================================================================
+    # STEP 6b: Create AFTER alignment overlay comparison
+    # ========================================================================
+    print("\n[STEP 6b] Creating overlay AFTER alignment (comparison)...")
+    
+    if alignment_results and not alignment_results[-1].get('failed', False):
+        final_result = alignment_results[-1]
+        warped_final = final_result['warped']
+        ref_final = final_result['ref']
+        final_score = final_result['score']
+        
+        # Convert to uint8 RGB
+        warped_viz = (warped_final * 255).astype(np.uint8)
+        ref_viz = (ref_final * 255).astype(np.uint8)
+        
+        # Create colored overlay: warped minimap in GREEN, static in RED
+        overlay_after = np.zeros((ref_viz.shape[0], ref_viz.shape[1], 3), dtype=np.uint8)
+        overlay_after[:, :, 1] = warped_viz  # Green channel = warped minimap
+        overlay_after[:, :, 2] = ref_viz  # Red channel = static
+        
+        # Calculate overlap for visualization
+        warped_pixels_viz = np.count_nonzero(warped_viz)
+        ref_pixels_viz = np.count_nonzero(ref_viz)
+        overlap_pixels_viz = np.count_nonzero(cv2.bitwise_and(warped_viz, ref_viz))
+        overlap_ratio_viz = (overlap_pixels_viz / max(warped_pixels_viz, ref_pixels_viz)) * 100 if max(warped_pixels_viz, ref_pixels_viz) > 0 else 0
+        
+        cv2.putText(overlay_after, f"Overlap: {overlap_ratio_viz:.1f}%", 
+                   (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 0), 2)
+        cv2.putText(overlay_after, f"ECC Score: {final_score:.3f}", 
+                   (10, 55), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
+        
+        save_debug_image(overlay_after, "ecc_08b_overlay_AFTER_alignment", output_dir)
+        
+        # Also create blend
+        warped_rgb = cv2.cvtColor(warped_viz, cv2.COLOR_GRAY2BGR)
+        ref_rgb = cv2.cvtColor(ref_viz, cv2.COLOR_GRAY2BGR)
+        overlay_blend_after = cv2.addWeighted(warped_rgb, 0.5, ref_rgb, 0.5, 0)
+        cv2.putText(overlay_blend_after, f"AFTER alignment - Score: {final_score:.4f}", (10, 25),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+        cv2.putText(overlay_blend_after, "Green=Warped Minimap, Red=Static, Yellow=Match", (10, 50),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        save_debug_image(overlay_blend_after, "ecc_08c_blend_AFTER_alignment", output_dir)
+        
+        print(f"   ✅ AFTER alignment overlay saved")
+        print(f"      Compare with BEFORE overlay (04b/04c) to see improvement")
+    
+    # ========================================================================
     # STEP 7: Final alignment on full resolution
     # ========================================================================
     print("\n[STEP 7] Computing final player position...")
@@ -451,25 +780,84 @@ def localize_with_ecc(
     if alignment_results and not alignment_results[-1].get('failed', False):
         final_warp = alignment_results[-1]['warp_matrix']
         final_score = alignment_results[-1]['score']
+        warped_final = alignment_results[-1]['warped']
+        ref_final = alignment_results[-1]['ref']
         
-        # Project player position (center of minimap)
-        center = (minimap_edges_canny.shape[1] / 2, minimap_edges_canny.shape[0] / 2)
+        # Analyze translation offset
+        tx = final_warp[0, 2]
+        ty = final_warp[1, 2]
+        total_offset = np.sqrt(tx**2 + ty**2)
         
-        # Account for upscaling: need to project back to original static map coordinates
-        scale_factor = static_map_edges_canny_original.shape[1] / static_map_edges_upscaled.shape[1]
+        # Calculate overlap ratio after alignment (more intuitive metric)
+        warped_final_uint8 = (warped_final * 255).astype(np.uint8)
+        ref_final_uint8 = (ref_final * 255).astype(np.uint8)
         
-        # Project through warp matrix
-        point_3d = np.array([center[0], center[1], 1], dtype=np.float32)
-        projected = final_warp @ point_3d
-        proj_x = projected[0] / (projected[2] + 1e-6)
-        proj_y = projected[1] / (projected[2] + 1e-6)
+        # Threshold to binary (handle floating point precision)
+        _, warped_binary = cv2.threshold(warped_final_uint8, 10, 255, cv2.THRESH_BINARY)
+        _, ref_binary = cv2.threshold(ref_final_uint8, 10, 255, cv2.THRESH_BINARY)
         
-        # Scale back to original static map size
-        player_pos = (int(proj_x * scale_factor), int(proj_y * scale_factor))
-        confidence = final_score
+        # Count overlapping pixels
+        warped_pixels_final = np.count_nonzero(warped_binary)
+        ref_pixels_final = np.count_nonzero(ref_binary)
+        overlap_pixels_final = np.count_nonzero(cv2.bitwise_and(warped_binary, ref_binary))
         
-        print(f"   Player position (original static map coords): {player_pos}")
-        print(f"   Confidence: {confidence:.4f}")
+        # Calculate overlap ratio (0-100%)
+        if max(warped_pixels_final, ref_pixels_final) > 0:
+            overlap_ratio_final = (overlap_pixels_final / max(warped_pixels_final, ref_pixels_final)) * 100
+        else:
+            overlap_ratio_final = 0.0
+        
+        # Alternative confidence based on overlap
+        confidence_human = min(overlap_ratio_final / 100.0, 1.0)  # Normalize to 0-1
+        
+        print(f"\n   📊 ALIGNMENT ANALYSIS:")
+        print(f"      Initialization method: {init_method}")
+        print(f"      Translation X: {tx:+.2f} px")
+        print(f"      Translation Y: {ty:+.2f} px")
+        print(f"      Total offset: {total_offset:.2f} px")
+        print(f"      ECC Score (correlation): {final_score:.4f}")
+        print(f"      Overlap After Alignment: {overlap_ratio_final:.1f}%")
+        print(f"      Confidence (overlap-based): {confidence_human:.3f}")
+        
+        # Interpret overlap quality
+        if overlap_ratio_final >= 70:
+            print(f"      ✅ Excellent overlap (≥70%) - Very high quality alignment")
+        elif overlap_ratio_final >= 50:
+            print(f"      ✅ Good overlap (≥50%) - Reliable alignment")
+        elif overlap_ratio_final >= 30:
+            print(f"      ⚠️  Moderate overlap (≥30%) - Acceptable but verify visually")
+        else:
+            print(f"      ❌ Low overlap (<30%) - Alignment may be incorrect")
+        
+        # Interpret the offset
+        if total_offset < 5:
+            print(f"      ✅ Very small offset - images were already well aligned")
+        elif total_offset < 20:
+            print(f"      ✅ Small offset - reasonable alignment")
+        elif total_offset < 50:
+            print(f"      ⚠️  Moderate offset - check overlay images")
+        else:
+            print(f"      ❌ Large offset ({total_offset:.0f} px) - alignment may be incorrect!")
+            print(f"         Check BEFORE/AFTER overlay images to diagnose")
+        
+        # Project player position (center of rescaled minimap)
+        # Since minimap_edges_rescaled has same size as static map, no scale_factor needed
+        center = np.array([minimap_edges_rescaled.shape[1] / 2, minimap_edges_rescaled.shape[0] / 2], dtype=np.float32)
+        
+        # Apply affine transformation (2x3 matrix)
+        # For translation: [x', y'] = [x, y] + [tx, ty]
+        projected = cv2.transform(np.array([[center]]), final_warp)[0][0]
+        
+        # Player position in static map coordinates (already at correct scale)
+        player_pos = (int(projected[0]), int(projected[1]))
+        
+        # Use overlap-based confidence (more intuitive than ECC score)
+        # Combine both metrics: 70% overlap + 30% ECC score
+        confidence = (0.7 * confidence_human) + (0.3 * final_score)
+        
+        print(f"\n   Player position (static map coords): {player_pos}")
+        print(f"   Final Confidence: {confidence:.4f}")
+        print(f"   Translation applied: X={tx:.2f}, Y={ty:.2f}")
         
         # Visualize on original static map
         if localizer.static_map is not None:
@@ -499,7 +887,7 @@ def localize_with_ecc(
         viz_path = localizer.visualize_player_position(
             player_pos,
             confidence,
-            method_name="ECC (with upscaling)",
+            method_name="ECC (Translation)",
             output_filename="ecc_10_player_position_on_map.png"
         )
         if viz_path:
@@ -509,397 +897,6 @@ def localize_with_ecc(
     
     return player_pos, confidence
 
-
-def localize_with_ransac(
-    frame_with_minimap,
-    frame_without_minimap,
-    zone_name,
-    output_dir
-):
-    """
-    Localize player using RANSAC-based feature matching.
-    
-    Args:
-        frame_with_minimap: Frame with minimap visible
-        frame_without_minimap: Frame without minimap (background)
-        zone_name: Current zone name (for static map lookup)
-        output_dir: Directory for debug images
-        
-    Returns:
-        (player_position, confidence) or (None, 0.0)
-    """
-    print("\n" + "="*70)
-    print("LOCALIZATION: RANSAC Method (Feature Matching)")
-    print("="*70)
-    
-    # Create localizer
-    localizer = RANSACStaticMapLocalizer(
-        debug=True,
-        output_dir=output_dir
-    )
-    
-    # Load static map
-    print(f"\n[*] Loading static map for zone: {zone_name}")
-    map_path = load_zone_static_map(zone_name)
-    
-    if map_path is None:
-        print(f"[!] No static map found for zone: {zone_name}")
-        return None, 0.0
-    
-    if not localizer.load_static_map(map_path):
-        print(f"[!] Failed to load static map")
-        return None, 0.0
-    
-    print(f"[+] Loaded static map from: {map_path}")
-    
-    # Run full localization pipeline
-    print("\n[*] Running RANSAC localization pipeline...")
-    
-    # Extract and visualize edges using localizer's methods
-    minimap_edges = localizer.extract_minimap_edges(
-        frame_with_minimap,
-        frame_without_minimap,
-        use_oriented_filter=True
-    )
-    
-    if minimap_edges is not None and minimap_edges.size > 0:
-        # Get Canny edges from localizer
-        minimap_edges_canny = localizer.extract_minimap_edges_canny(
-            frame_with_minimap,
-            frame_without_minimap,
-            use_oriented_filter=True,
-            canny_low=50,
-            canny_high=150
-        )
-        save_debug_image(minimap_edges_canny, "ransac_01_minimap_edges_canny", output_dir)
-        
-        # Get static map Canny edges from localizer
-        static_map_edges_canny = localizer.extract_static_map_edges_canny(
-            white_threshold=120,
-            canny_low=50,
-            canny_high=150
-        )
-        save_debug_image(static_map_edges_canny, "ransac_02_static_map_edges_canny", output_dir)
-        
-        # Create side-by-side visualization with edges
-        if minimap_edges_canny is not None and static_map_edges_canny is not None:
-            viz_height = max(minimap_edges_canny.shape[0], static_map_edges_canny.shape[0])
-            
-            # Convert to RGB for visualization
-            minimap_rgb = cv2.cvtColor(minimap_edges_canny, cv2.COLOR_GRAY2BGR)
-            static_rgb = cv2.cvtColor(static_map_edges_canny, cv2.COLOR_GRAY2BGR)
-            
-            # Resize to same height
-            scale_minimap = viz_height / minimap_rgb.shape[0]
-            minimap_resized = cv2.resize(minimap_rgb, None, fx=scale_minimap, fy=scale_minimap, interpolation=cv2.INTER_LINEAR)
-            
-            scale_static = viz_height / static_rgb.shape[0]
-            static_resized = cv2.resize(static_rgb, None, fx=scale_static, fy=scale_static, interpolation=cv2.INTER_LINEAR)
-            
-            # Create composite
-            composite = np.ones((viz_height, minimap_resized.shape[1] + static_resized.shape[1] + 20, 3), dtype=np.uint8) * 255
-            composite[0:minimap_resized.shape[0], 0:minimap_resized.shape[1]] = minimap_resized
-            composite[0:static_resized.shape[0], minimap_resized.shape[1]+20:] = static_resized
-            
-            # Add labels
-            cv2.putText(composite, "Minimap Edges (Canny)", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            cv2.putText(composite, "Static Map (White+Canny)", (minimap_resized.shape[1] + 30, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-            
-            save_debug_image(composite, "ransac_03_comparison_edges", output_dir)
-            print(f"[+] Saved comparison visualization with edges")
-        
-        # ================================================================
-        # VISUALIZE SIFT KEYPOINTS AND MATCHES
-        # ================================================================
-        print(f"\n[*] SIFT Keypoint Detection and Matching...")
-        
-        if localizer.sift is not None:
-            # Detect SIFT keypoints
-            kp_minimap, des_minimap = localizer.sift.detectAndCompute(minimap_edges_canny, None)
-            kp_static, des_static = localizer.sift.detectAndCompute(static_map_edges_canny, None)
-            
-            print(f"    Minimap keypoints: {len(kp_minimap)}")
-            print(f"    Static map keypoints: {len(kp_static)}")
-            
-            # Visualize minimap keypoints
-            if len(kp_minimap) > 0:
-                minimap_kp_viz = cv2.drawKeypoints(
-                    minimap_edges_canny,
-                    kp_minimap,
-                    None,
-                    flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS
-                )
-                save_debug_image(minimap_kp_viz, "ransac_05_minimap_sift_keypoints", output_dir)
-                print(f"[+] Saved minimap SIFT keypoints visualization")
-            
-            # Visualize static map keypoints
-            if len(kp_static) > 0:
-                static_kp_viz = cv2.drawKeypoints(
-                    static_map_edges_canny,
-                    kp_static,
-                    None,
-                    flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS
-                )
-                save_debug_image(static_kp_viz, "ransac_06_static_sift_keypoints", output_dir)
-                print(f"[+] Saved static map SIFT keypoints visualization")
-            
-            # Feature matching
-            if des_minimap is not None and des_static is not None and len(kp_minimap) > 0 and len(kp_static) > 0:
-                print(f"\n    Feature matching with FLANN...")
-                
-                FLANN_INDEX_KDTREE = 1
-                index_params = {"algorithm": FLANN_INDEX_KDTREE, "trees": 5}  # type: ignore
-                search_params = {"checks": 50}  # type: ignore
-                flann = cv2.FlannBasedMatcher(index_params, search_params)  # type: ignore
-                
-                matches = flann.knnMatch(des_minimap, des_static, k=2)
-                
-                # Apply Lowe's ratio test
-                good_matches = []
-                for match_pair in matches:
-                    if len(match_pair) == 2:
-                        m, n = match_pair
-                        if m.distance < localizer.sift_ratio_threshold * n.distance:
-                            good_matches.append(m)
-                
-                print(f"    Total matches: {len(matches)}")
-                print(f"    Good matches (Lowe ratio {localizer.sift_ratio_threshold}): {len(good_matches)}")
-                
-                # Visualize good matches
-                if len(good_matches) > 0:
-                    # Convert edge images to RGB for match visualization
-                    minimap_for_matches = cv2.cvtColor(minimap_edges_canny, cv2.COLOR_GRAY2BGR)
-                    static_for_matches = cv2.cvtColor(static_map_edges_canny, cv2.COLOR_GRAY2BGR)
-                    
-                    match_img = cv2.drawMatches(
-                        minimap_for_matches, kp_minimap,
-                        static_for_matches, kp_static,
-                        good_matches[:30],  # Show first 30 matches
-                        None,
-                        flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS,
-                        matchColor=(0, 255, 0),
-                        singlePointColor=(255, 0, 0)
-                    )
-                    
-                    # Add text info
-                    cv2.putText(match_img, f"Good matches: {len(good_matches)}/{len(matches)}", (10, 30), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-                    cv2.putText(match_img, f"(Showing first 30)", (10, 60), 
-                               cv2.FONT_HERSHEY_SIMPLEX, 0.8, (100, 100, 100), 1)
-                    
-                    save_debug_image(match_img, "ransac_07_feature_matches", output_dir)
-                    print(f"[+] Saved feature matches visualization")
-
-    
-    # Use RANSAC to localize
-    player_pos, confidence = localizer.localize(
-        frame_with_minimap,
-        frame_without_minimap
-    )
-    
-    if player_pos:
-        print(f"\n[SUCCESS] Player localized with RANSAC!")
-        print(f"         Position: {player_pos}")
-        print(f"         Confidence: {confidence:.3f}")
-        
-        # Visualize position on static map
-        print(f"\n[*] Visualizing position on static map...")
-        viz_path = localizer.visualize_player_position(
-            player_pos,
-            confidence,
-            method_name="RANSAC",
-            output_filename="ransac_04_player_position_on_map.png"
-        )
-        if viz_path:
-            print(f"[+] Saved visualization: {viz_path.name}")
-    else:
-        print(f"\n[FAILED] RANSAC could not localize player")
-    
-    return player_pos, confidence
-
-
-# ============================================================================
-# DIAGNOSTIC ANALYSIS SUITE
-# ============================================================================
-
-def run_diagnostic_analysis(
-    frame_with_minimap: np.ndarray,
-    frame_without_minimap: np.ndarray,
-    zone_name: str,
-    output_dir: Path
-):
-    """
-    Run comprehensive diagnostic analysis to identify improvement opportunities.
-    
-    Analyzes:
-    1. Image dimensions and aspect ratios
-    2. Pyramid analysis for ECC algorithm
-    3. Edge detection quality
-    4. Recommendations for improvement
-    
-    Args:
-        frame_with_minimap: Frame with minimap visible
-        frame_without_minimap: Frame without minimap (background)
-        zone_name: Current zone name
-        output_dir: Directory for outputs
-    """
-    print("\n" + "="*70)
-    print("DIAGNOSTIC ANALYSIS: Image Dimensions & Algorithm Compatibility")
-    print("="*70)
-    
-    # Create localizer to extract edges
-    localizer = ECCStaticMapLocalizer(debug=False, output_dir=output_dir)
-    map_path = load_zone_static_map(zone_name)
-    if not localizer.load_static_map(map_path):
-        print("[!] Could not load static map for analysis")
-        return
-    
-    # Extract edges
-    minimap_edges = localizer.extract_minimap_edges_canny(
-        frame_with_minimap,
-        frame_without_minimap,
-        canny_low=50,
-        canny_high=150
-    )
-    static_edges = localizer.extract_static_map_edges_canny(
-        white_threshold=120,
-        canny_low=50,
-        canny_high=150
-    )
-    
-    if minimap_edges is None or static_edges is None:
-        print("[!] Could not extract edges for analysis")
-        return
-    
-    print("\n[1] IMAGE DIMENSIONS")
-    print("-" * 70)
-    print(f"Minimap edges: {minimap_edges.shape[1]:4d} × {minimap_edges.shape[0]:4d} px")
-    print(f"Static map edges: {static_edges.shape[1]:4d} × {static_edges.shape[0]:4d} px")
-    
-    width_ratio = minimap_edges.shape[1] / static_edges.shape[1]
-    height_ratio = minimap_edges.shape[0] / static_edges.shape[0]
-    area_ratio = (minimap_edges.shape[0] * minimap_edges.shape[1]) / (static_edges.shape[0] * static_edges.shape[1])
-    
-    print(f"\nSize ratios (minimap / static):")
-    print(f"  Width:  {width_ratio:.2f}×")
-    print(f"  Height: {height_ratio:.2f}×")
-    print(f"  Area:   {area_ratio:.2f}×")
-    
-    avg_ratio = (width_ratio + height_ratio) / 2
-    if avg_ratio > 2.0:
-        print(f"\n⚠️  WARNING: Size mismatch {avg_ratio:.2f}× is > 2.0×")
-        print("   This can cause ECC algorithm to fail at pyramid initialization!")
-    
-    # Analyze pyramid levels
-    print("\n[2] ECC PYRAMID ANALYSIS (Multi-scale Alignment)")
-    print("-" * 70)
-    
-    # Build pyramids like ECC does
-    minimap_pyr = [minimap_edges]
-    static_pyr = [static_edges]
-    
-    for level in range(3):
-        minimap_pyr.append(cv2.resize(minimap_pyr[-1], (minimap_pyr[-1].shape[1]//2, minimap_pyr[-1].shape[0]//2)))
-        static_pyr.append(cv2.resize(static_pyr[-1], (static_pyr[-1].shape[1]//2, static_pyr[-1].shape[0]//2)))
-    
-    print(f"{'Level':<6} {'Minimap':<15} {'Static':<15} {'Ratio':<8} {'Status':<20}")
-    print("-" * 70)
-    
-    min_viable_size = 30
-    for level, (m, s) in enumerate(zip(minimap_pyr, static_pyr)):
-        ratio = m.shape[1] / s.shape[1] if s.shape[1] > 0 else 0
-        status = "✅ OK" if ratio < 2.0 and m.shape[1] > min_viable_size else "❌ PROBLEM"
-        print(f"{level:<6} {m.shape[1]:3d}×{m.shape[0]:3d}      {s.shape[1]:3d}×{s.shape[0]:3d}      {ratio:5.2f}×   {status:<20}")
-    
-    print(f"\n💡 ECC works best when all pyramid levels have ratio < 2.0×")
-    if avg_ratio > 2.0:
-        print(f"   Current ratio {avg_ratio:.2f}× → Consider RESCALING before alignment")
-    
-    # Edge coverage analysis
-    print("\n[3] EDGE CONTENT ANALYSIS")
-    print("-" * 70)
-    
-    minimap_coverage = np.count_nonzero(minimap_edges) / minimap_edges.size * 100
-    static_coverage = np.count_nonzero(static_edges) / static_edges.size * 100
-    
-    print(f"Minimap edge coverage: {minimap_coverage:5.2f}%")
-    print(f"Static map edge coverage: {static_coverage:5.2f}%")
-    
-    if minimap_coverage < 2.0 or static_coverage < 2.0:
-        print(f"⚠️  WARNING: Low edge coverage detected")
-    
-    # Recommendations
-    print("\n[4] IDENTIFIED PROBLEMS & SOLUTIONS")
-    print("-" * 70)
-    
-    problems = []
-    solutions = []
-    
-    if avg_ratio > 2.0:
-        problems.append(f"Size mismatch: {avg_ratio:.2f}× → ECC pyramid fails")
-        solutions.append("▶ SOLUTION A: Rescale minimap to match static map size before alignment")
-        solutions.append(f"  Test: Resize {minimap_edges.shape} → {static_edges.shape}")
-    
-    if minimap_coverage < 2.0 or static_coverage < 2.0:
-        problems.append(f"Low edge coverage → weak feature for alignment")
-        solutions.append("▶ SOLUTION B: Improve edge detection parameters (Canny thresholds, Gabor angles)")
-    
-    if len(problems) == 0:
-        problems.append("No critical issues detected")
-        solutions.append("✅ Images appear compatible with ECC algorithm")
-    
-    for prob in problems:
-        print(f"❌ {prob}")
-    
-    print()
-    for sol in solutions:
-        print(f"{sol}")
-    
-    # Create diagnostic visualization
-    print("\n[5] DIAGNOSTIC VISUALIZATION")
-    print("-" * 70)
-    
-    # Create composite showing dimensions
-    minimap_display = cv2.cvtColor(minimap_edges, cv2.COLOR_GRAY2BGR)
-    static_display = cv2.cvtColor(static_edges, cv2.COLOR_GRAY2BGR)
-    
-    # Resize for display (same height)
-    display_height = 400
-    scale_mini = display_height / minimap_display.shape[0]
-    scale_static = display_height / static_display.shape[0]
-    
-    minimap_display = cv2.resize(minimap_display, None, fx=scale_mini, fy=scale_mini, interpolation=cv2.INTER_LINEAR)
-    static_display = cv2.resize(static_display, None, fx=scale_static, fy=scale_static, interpolation=cv2.INTER_LINEAR)
-    
-    # Create composite with proper sizing
-    total_width = minimap_display.shape[1] + static_display.shape[1] + 60
-    canvas_height = max(minimap_display.shape[0], static_display.shape[0]) + 100
-    composite = np.ones((canvas_height, total_width, 3), dtype=np.uint8) * 240
-    
-    # Place images
-    composite[0:minimap_display.shape[0], 20:20+minimap_display.shape[1]] = minimap_display
-    static_x_start = minimap_display.shape[1] + 40
-    static_x_end = static_x_start + static_display.shape[1]
-    composite[0:static_display.shape[0], static_x_start:static_x_end] = static_display
-    
-    # Add labels with dimensions
-    cv2.putText(composite, f"Minimap: {minimap_edges.shape[1]}×{minimap_edges.shape[0]}", 
-                (30, minimap_display.shape[0] + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-    cv2.putText(composite, f"Static: {static_edges.shape[1]}×{static_edges.shape[0]}", 
-                (static_x_start + 10, static_display.shape[0] + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
-    
-    ratio_str = f"Ratio: {width_ratio:.2f}× W × {height_ratio:.2f}× H"
-    if avg_ratio > 2.0:
-        cv2.putText(composite, f"⚠️ {ratio_str} - SIZE MISMATCH!", 
-                    (30, minimap_display.shape[0] + 70), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
-    else:
-        cv2.putText(composite, f"✅ {ratio_str} - Compatible", 
-                    (30, minimap_display.shape[0] + 70), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 200, 0), 2)
-    
-    save_debug_image(composite, "diagnostic_01_image_dimensions", output_dir)
-    
-    print(f"[+] Saved diagnostic visualization")
-    print()
 
 def main():
     """Main test function."""
@@ -918,8 +915,12 @@ def main():
     print("=" * 70)
     print()
     
-    # Create output directory
+    # Create output directory (clean if exists)
     output_dir = Path(__file__).parent / "data" / "screenshots" / "outputs" / "localization_test_v3_modular"
+    if output_dir.exists():
+        import shutil
+        print(f"[*] Cleaning output directory: {output_dir}")
+        shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     print(f"[*] Debug images will be saved to: {output_dir}")
     print()
@@ -962,36 +963,16 @@ def main():
         if not zone_name:
             zone_name = 'Rogue Encampment'  # Default zone
         print(f"\nOK Current zone: {zone_name}")
-        
+
+    
         # ================================================================
-        # DIAGNOSTIC ANALYSIS (before comparing methods)
-        # ================================================================
-        print("\n" + "="*70)
-        print("STEP 2: Diagnostic Analysis")
-        print("="*70)
-        
-        run_diagnostic_analysis(
-            frame_with_minimap,
-            frame_without_minimap,
-            zone_name,
-            output_dir
-        )
-        
-        # ================================================================
-        # MAIN LOCALIZATION: Compare ECC vs RANSAC
+        # MAIN LOCALIZATION: ECC Method
         # ================================================================
         print("\n" + "="*70)
-        print("STEP 3: Localization Methods Comparison")
+        print("STEP 2: ECC Localization")
         print("="*70)
         
         player_pos_ecc, confidence_ecc = localize_with_ecc(
-            frame_with_minimap,
-            frame_without_minimap,
-            zone_name,
-            output_dir
-        )
-        
-        player_pos_ransac, confidence_ransac = localize_with_ransac(
             frame_with_minimap,
             frame_without_minimap,
             zone_name,
@@ -1007,52 +988,18 @@ def main():
     # Done
     print()
     print("=" * 70)
-    print("FINAL RESULTS & RECOMMENDATIONS")
+    print("FINAL RESULTS")
     print("=" * 70)
     print()
     
-    # Display comparison
-    print("LOCALIZATION RESULTS")
-    print("-" * 70)
-    print(f"{'Method':<20} {'Position':<25} {'Confidence':<15}")
-    print("-" * 70)
-    
     if player_pos_ecc:
-        print(f"{'ECC':<20} {str(player_pos_ecc):<25} {confidence_ecc:.3f}")
+        print(f"✅ SUCCESS: Player localized with ECC")
+        print(f"   Position: {player_pos_ecc}")
+        print(f"   Confidence: {confidence_ecc:.3f}")
     else:
-        print(f"{'ECC':<20} {'FAILED':<25} {confidence_ecc:.3f}")
-    
-    if player_pos_ransac:
-        print(f"{'RANSAC':<20} {str(player_pos_ransac):<25} {confidence_ransac:.3f}")
-    else:
-        print(f"{'RANSAC':<20} {'FAILED':<25} {confidence_ransac:.3f}")
-    
-    print("-" * 70)
-    
-    # Determine winner and provide insights
-    print("\nALGORITHM ANALYSIS")
-    print("-" * 70)
-    
-    if confidence_ecc == 0.0 and confidence_ransac > 0:
-        print(f"⚠️  ECC FAILED (confidence 0.0) - Likely cause: IMAGE SIZE MISMATCH")
-        print(f"    RANSAC SUCCEEDED (confidence {confidence_ransac:.3f})")
-        print(f"\n💡 RECOMMENDATION: Rescale minimap to match static map dimensions")
-        print(f"    before running ECC alignment. See diagnostic output above.")
-        print(f"    Alternative: Continue using RANSAC (feature-based, more tolerant)")
-    elif player_pos_ecc and player_pos_ransac:
-        # Both succeeded - compare confidence
-        if confidence_ecc > confidence_ransac:
-            print(f"✅ WINNER: ECC (confidence {confidence_ecc:.3f} > {confidence_ransac:.3f})")
-        elif confidence_ransac > confidence_ecc:
-            print(f"✅ WINNER: RANSAC (confidence {confidence_ransac:.3f} > {confidence_ecc:.3f})")
-        else:
-            print(f"🤝 TIE: Both methods equal (confidence {confidence_ecc:.3f})")
-    elif player_pos_ecc:
-        print(f"✅ WINNER: ECC (RANSAC failed)")
-    elif player_pos_ransac:
-        print(f"✅ WINNER: RANSAC (ECC failed)")
-    else:
-        print(f"❌ BOTH METHODS FAILED - See diagnostic analysis for potential issues")
+        print(f"❌ FAILED: ECC could not localize player")
+        print(f"   Confidence: {confidence_ecc:.3f}")
+        print(f"\n💡 Check diagnostic analysis and debug images for potential issues")
     
     print()
     print("=" * 70)

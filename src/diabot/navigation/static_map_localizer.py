@@ -206,7 +206,7 @@ class StaticMapLocalizer:
                 best_confidence = confidence
                 best_scale = scale
                 center_x = match_loc[0] + new_w // 2
-                center_y = match_loc[1] + new_h // 2
+                center_y = match_loc[1] + new_h // 2 -10
                 best_result = {
                     'position': (center_x, center_y),
                     'template_size': (new_w, new_h)

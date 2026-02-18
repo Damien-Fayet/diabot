@@ -1,0 +1,55 @@
+{
+  "level_0": [
+    {
+      "type": "npc",
+      "pos": [
+        1024,
+        1024
+      ],
+      "confidence": 0.9,
+      "metadata": {
+        "name": "Akara"
+      }
+    },
+    {
+      "type": "waypoint",
+      "pos": [
+        1024,
+        1044
+      ],
+      "confidence": 1.0,
+      "metadata": {
+        "zone": "Rogue Encampment"
+      }
+    },
+    {
+      "type": "exit",
+      "pos": [
+        1074,
+        1024
+      ],
+      "confidence": 0.8,
+      "metadata": {
+        "destination": "Blood Moor"
+      }
+    },
+    {
+      "type": "chest",
+      "pos": [
+        1004,
+        1004
+      ],
+      "confidence": 0.7,
+      "metadata": {}
+    },
+    {
+      "type": "shrine",
+      "pos": [
+        1044,
+        1044
+      ],
+      "confidence": 0.75,
+      "metadata": {}
+    }
+  ]
+}

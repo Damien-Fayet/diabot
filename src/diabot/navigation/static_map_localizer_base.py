@@ -158,8 +158,9 @@ class StaticMapLocalizerBase(ABC):
         frame_without_minimap: np.ndarray,
         use_oriented_filter: bool = True,
         canny_low: int = 50,
-        canny_high: int = 150
-    ) -> Optional[np.ndarray]:
+        canny_high: int = 150,
+        return_both: bool = False
+    ) -> Optional[np.ndarray] | tuple[Optional[np.ndarray], Optional[np.ndarray]]:
         """
         Extract minimap edges and apply Canny edge detection.
         
@@ -169,9 +170,11 @@ class StaticMapLocalizerBase(ABC):
             use_oriented_filter: Use Gabor filters for isometric detection
             canny_low: Canny lower threshold
             canny_high: Canny upper threshold
+            return_both: If True, return tuple (edges_no_canny, edges_canny)
             
         Returns:
-            Canny edge-detected image or None
+            If return_both=False: Canny edge-detected image or None
+            If return_both=True: tuple (edges_no_canny, edges_canny) or (None, None)
         """
         edges = self.extract_minimap_edges(
             frame_with_minimap,
@@ -180,16 +183,23 @@ class StaticMapLocalizerBase(ABC):
         )
         
         if edges is None:
+            if return_both:
+                return None, None
             return None
         
         try:
             edges_canny = cv2.Canny(edges, canny_low, canny_high)
             if self.debug:
                 print(f"[+] Applied Canny edge detection")
+            
+            if return_both:
+                return edges, edges_canny
             return edges_canny
         except Exception as e:
             if self.debug:
                 print(f"[!] Error in Canny edge detection: {e}")
+            if return_both:
+                return edges, None
             return None
     
     def extract_static_map_edges_canny(
